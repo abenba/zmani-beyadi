@@ -781,7 +781,6 @@
     <div class="predActs">
       <button id="predToLetter">✍️ כתוב איגרת מן העתיד</button>
       <button id="predToCam">🤳 צור סלפי מהעתיד</button>
-      <button id="predToPlainCam">📷 צילום רגיל</button>
     </div>
     <div class="encyIntro" id="encyIntro" style="display:none">רוצה להעמיק? גע/י במקש המתאים</div>
     <div class="encyGrid" id="encyGrid" style="display:none"></div>
@@ -2070,7 +2069,6 @@
   $('topicPickerClose').onclick=()=>{ $('topicPicker').classList.remove('open'); pendingPerkAction=null; showPredictionScreen(); };
   $('predToLetter').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); openTopicPicker('letter'); };
   $('predToCam').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); openTopicPicker('selfie'); };
-  $('predToPlainCam').onclick=()=>{ selectedPerkTopicId=null; camOpenedFromPrediction=true; stopPredCam(); $('predictionScreen').classList.remove('open'); openCam(); };
   $('predFlyElsewhere').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); startTelescope(true); };
   $('predBackToNow').onclick=()=>{
     stopPredCam();
