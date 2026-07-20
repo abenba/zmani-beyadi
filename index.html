@@ -1,3 +1,7 @@
+
+
+Zmani beyadi · HTML
+Syntax highlighting has been disabled due to code size.
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -364,7 +368,7 @@
     box-shadow:0 6px 18px rgba(42,36,22,.28);border:6px solid #fff;transform:rotate(-1.2deg)}
   .lcPhoto img{width:100%;display:block}
   .lcBackground{
-    display:flex;align-items:center;gap:12px;margin:0 0 18px;padding:12px 14px;
+    display:flex;align-items:center;gap:12px;margin:22px 0 18px;padding:12px 14px;
     background:rgba(184,147,63,.08);border:1px solid rgba(184,147,63,.3);border-radius:10px;text-align:right}
   .lcBgIcon{width:44px;height:44px;flex-shrink:0}
   .lcBgIcon svg{width:100%;height:100%;display:block}
@@ -375,6 +379,7 @@
   .lcFootLine{width:60px;height:1px;background:#C9B888;margin:0 auto 14px}
   .lcFootBrand{font-family:'Frank Ruhl Libre',serif;font-size:14px;font-weight:700;color:#7A6B42;letter-spacing:.08em}
   .lcFootTag{font-size:10.5px;color:#A79868;margin-top:3px}
+  .lcFootCta{font-size:10.5px;font-weight:700;color:#8B6F2E;margin-top:8px}
   .lcSeal{
     display:inline-flex;align-items:center;gap:6px;margin:-8px auto 22px;
     font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:#8A6F2A;
@@ -406,6 +411,7 @@
   .pcFoot{margin-top:22px}
   .pcFootLine{width:50px;height:1px;background:rgba(255,255,255,.4);margin:0 auto 10px}
   .pcFootBrand{font-family:'Frank Ruhl Libre',serif;font-size:13px;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.06em}
+  .pcFootCta{font-size:10px;font-weight:700;color:rgba(255,255,255,.7);margin-top:6px}
   #postcardSendModal{
     position:fixed;inset:0;z-index:60;display:none;place-items:center;
     background:rgba(10,14,20,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:20px}
@@ -1061,16 +1067,17 @@
   </div>
   <div class="lcSeal" id="lcSeal">תיעוד עתידי <b id="lcSealNum"></b></div>
   <div class="lcPhoto" id="lcPhoto" style="display:none"><img id="lcPhotoImg"></div>
+  <div class="lcBody" id="lcBody"></div>
   <div class="lcBackground" id="lcBackground" style="display:none">
     <div class="lcBgIcon" id="lcBgIcon"></div>
     <div class="lcBgText" id="lcBgText"></div>
   </div>
   <div class="lcTopicImg" id="lcTopicImg" style="display:none"><img id="lcTopicImgEl" alt=""></div>
-  <div class="lcBody" id="lcBody"></div>
   <div class="lcFoot">
     <div class="lcFootLine"></div>
     <div class="lcFootBrand">משחקי זמן</div>
     <div class="lcFootTag">כלי אישי למסע בזמן</div>
+    <div class="lcFootCta">רוצה להצטרף? time3machine.netlify.app</div>
   </div>
 </div>
 
@@ -1086,6 +1093,7 @@
     <div class="pcFoot">
       <div class="pcFootLine"></div>
       <div class="pcFootBrand">משחקי זמן</div>
+      <div class="pcFootCta">רוצה להצטרף? time3machine.netlify.app</div>
     </div>
   </div>
 </div>
@@ -1822,7 +1830,7 @@
       const entry=encyEntry(selectedPerkTopicId,bucket);
       $('pcBg').style.background=`radial-gradient(circle at 50% 28%, ${t.accent}2e, #0B0E14 72%)`;
       $('pcBg').innerHTML=buildEncyIllustration(t.motif,t.accent).replace('<svg ','<svg width="340" height="340" style="position:absolute;top:6%;left:50%;transform:translateX(-50%);opacity:0.55" ');
-      $('pcCaption').textContent=entry.teaser;
+      $('pcCaption').textContent=entry.teaser+' '+entry.body.split('\n\n')[0];
       selectedPerkTopicId=null;
     }else{
       $('pcBg').style.background=PRED_PALETTES[key].bg;
@@ -2561,7 +2569,7 @@
       const t=ENCY_TOPICS.find(x=>x.id===selectedPerkTopicId);
       const {bucket}=currentYearBucket();
       const entry=encyEntry(selectedPerkTopicId,bucket);
-      const bgSentences=entry.body.split('\n\n')[0];
+      const bgSentences=entry.body.split('\n\n').slice(0,2).join(' ');
       $('lmBgPreviewIcon').innerHTML=buildEncyIllustration(t.motif,t.accent).replace('<svg ','<svg width="36" height="36" ');
       $('lmBgPreviewText').textContent=bgSentences;
       $('lmBgPreview').style.display='flex';
@@ -2614,7 +2622,7 @@
       const t=ENCY_TOPICS.find(x=>x.id===selectedPerkTopicId);
       const {bucket}=currentYearBucket();
       const entry=encyEntry(selectedPerkTopicId,bucket);
-      const bgSentences=entry.body.split('\n\n')[0]; // הפסקה הראשונה — כ-2 משפטים
+      const bgSentences=entry.body.split('\n\n').slice(0,2).join(' '); // שתי הפסקאות הראשונות — כ-4 משפטים
       $('lcBgIcon').innerHTML=buildEncyIllustration(t.motif,t.accent).replace('<svg ','<svg width="44" height="44" ');
       $('lcBgText').textContent=bgSentences;
       $('lcBackground').style.display='flex';
@@ -3160,3 +3168,5 @@
 </script>
 </body>
 </html>
+
+
