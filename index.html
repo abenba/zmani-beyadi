@@ -1646,30 +1646,11 @@
         : 'אתה צופה בעולם של לפני '+fmtDur(shownSec);
     }else if(gapSec<-1.5){
       /* ===== אתה בעתיד: התמונה נשארת ברורה — התחושה של "רחוק בזמן" כבר ניתנת במסך "מה קורה כאן?", לא כאן ===== */
-      const CAM_FUTURE_CLARITY=0.15; // כמה מעוצמת האפקט המקורית נשארת (המצלמה היא כלי תיעוד, לא אווירה)
-      const baseAmt=clamp01(Math.max(0.35,-gapSec/30));
-      const amt=baseAmt*lerp(0.03,1,intensity)*CAM_FUTURE_CLARITY;
-      // מרחק מצטבר (בלוג): כמה רחוק כבר נסעת בסשן הזה, ללא תלות במהירות הרגעית
-      const distanceT=clamp01(Math.log(1+(-gapSec)/60)/Math.log(1+1440))*CAM_FUTURE_CLARITY;
+      coverDraw(cctx,1); // ציור חד וישיר של הפריים הנוכחי — בלי מאגר-רפאים מצטבר שגרם לטשטוש
+      const distanceT=clamp01(Math.log(1+(-gapSec)/60)/Math.log(1+1440));
       const tintR=lerp(62,98,distanceT), tintG=lerp(123,64,distanceT), tintB=lerp(190,190,distanceT);
-      tctx.globalAlpha=lerp(0.5,0.055,amt)*CAM_FUTURE_CLARITY;
-      coverDraw(tctx,tctx.globalAlpha);
-      tctx.globalAlpha=1;
-      cctx.drawImage(trail,0,0);
-      // ריצוד-דהייה (streak): ככל שהמרחק גדל, נוצר כפל-דמות עדין כאילו העולם נמרח מהמהירות
-      if(distanceT>0.05){
-        cctx.save();
-        cctx.globalAlpha=0.16*distanceT*lerp(0.15,1,intensity);
-        cctx.drawImage(trail, 5+9*distanceT, 0);
-        cctx.globalAlpha=0.10*distanceT*lerp(0.15,1,intensity);
-        cctx.drawImage(trail, -(5+9*distanceT), 0);
-        cctx.restore();
-      }
-      cctx.fillStyle=`rgba(${tintR|0},${tintG|0},${tintB|0},${amt*(0.10+distanceT*0.16)})`; cctx.fillRect(0,0,w,h);
-      // אברציה כרומטית: פיצול אדום/ציאן — נשאר עדין מאוד, נגיעה אווירתית בלבד
-      drawChroma((2+16*distanceT*lerp(0.25,1,intensity))*CAM_FUTURE_CLARITY);
-      vignette(0.3*lerp(0.03,1,intensity)*lerp(1,2.0,distanceT)*CAM_FUTURE_CLARITY,false);
-      drawFloatWords(dt,intensity,tintR,tintG,tintB,distanceT);
+      cctx.fillStyle=`rgba(${tintR|0},${tintG|0},${tintB|0},${(0.03+distanceT*0.05).toFixed(3)})`; cctx.fillRect(0,0,w,h);
+      vignette(0.08+distanceT*0.06,false);
       cap.textContent='אתה '+fmtDur(-gapSec)+' לפני העולם — מה שאתה רואה כבר עבר מבחינתך';
     }else{
       coverDraw(cctx,1);
@@ -1744,7 +1725,7 @@
       const t=ENCY_TOPICS.find(x=>x.id===selectedPerkTopicId);
       const bucket=bucketForYears(Math.min(100,Math.max(1,yearsAhead)));
       const entry=encyEntry(selectedPerkTopicId,bucket);
-      $('pcBg').style.background=`radial-gradient(circle at 50% 28%, ${t.accent}2e, #0B0E14 72%)`;
+      $('pcBg').style.background=`linear-gradient(165deg, ${t.accent}, #0B0E14 78%)`;
       $('pcBg').innerHTML='';
       $('pcTopicIcon').innerHTML=buildEncyIllustration(t.motif,t.accent);
       $('pcTopicIcon').style.display='block';
@@ -1754,9 +1735,9 @@
       $('pcTopicIcon').style.display='none';
       $('pcBg').style.background=PRED_PALETTES[key].bg;
       $('pcBg').innerHTML=buildSceneSVG(key,targetYear);
-      $('pcCaption').textContent='רגע שנתפס בזמן שלך, ב-'+pad(d.getHours())+':'+pad(d.getMinutes());
+      $('pcCaption').textContent='רגע שנתפס בזמן שלך, בשנת '+targetYear+'.';
     }
-    $('pcDateTag').textContent=d.getDate()+' ב'+heMonL[d.getMonth()]+' '+d.getFullYear();
+    $('pcDateTag').textContent=d.getFullYear();
     $('pcDistance').textContent = yearsAhead>=1 ? ('+'+yearsAhead+' שנים קדימה מהיום') : '';
     $('pcSeal').textContent='עותק #'+String(nextArtifactSeq()).padStart(6,'0');
     shot.classList.remove('open');
