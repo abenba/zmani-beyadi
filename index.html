@@ -780,7 +780,7 @@
     <div class="predCard" id="predCard"></div>
     <div class="predActs">
       <button id="predToLetter">✍️ כתוב איגרת מן העתיד</button>
-      <button id="predToCam">🤳 צור סלפי מהעתיד</button>
+      <button id="predToCam">📷 צור תמונה מהעתיד</button>
     </div>
     <div class="encyIntro" id="encyIntro" style="display:none">רוצה להעמיק? גע/י במקש המתאים</div>
     <div class="encyGrid" id="encyGrid" style="display:none"></div>
@@ -903,7 +903,7 @@
     <a id="saveShot" download>שמירה</a>
     <button id="closeShot">סגירה</button>
   </div>
-  <button id="makePostcard" style="display:none">🤳 צור סלפי מהעתיד</button>
+  <button id="makePostcard" style="display:none">📷 צור תמונה מהעתיד</button>
   <div class="hint">התוצר נחתם בזמן שלך ובפער מהעולם</div>
 </div>
 
@@ -1695,7 +1695,7 @@
   async function tryAiSelfie(t,targetYear,blob){
     try{
       const base64=await blobToBase64(blob);
-      const prompt='ערוך את התמונה המצורפת: שמור על פני האדם בתמונה ברורים, מוכרים ובמרכז הפריים, אך צייר אותו/ה מחדש בתוך סצנה מאוירת (לא פוטוריאליסטית) המתארת "'+t.title+'" בעולם של שנת '+targetYear+'. חשוב: התוצאה צריכה להיות מרשימה, דרמטית ומגניבה ויזואלית — קומפוזיציה נועזת, תאורה אטמוספרית, עומק ופרטים עשירים ברקע — לא איור שטוח או גנרי. סגנון אמנותי-עתידני איכותי (ברמת קונספט-ארט של קולנוע מדע בדיוני), גוונים סביב הצבע '+t.accent+', קומפוזיציה פורטרטית (לאורך), ללא טקסט בתמונה.';
+      const prompt='ערוך את התמונה המצורפת מחדש כדי שתשקף את הנושא "'+t.title+'" בעולם של שנת '+targetYear+'. אם יש אדם/אנשים בתמונה המקורית — שמור על הפנים שלהם ברורים, מוכרים ובמרכז הפריים, וצייר את הסביבה מסביבם מחדש בהתאם לנושא. אם אין אדם בתמונה (למשל תמונת נוף, עצם או מקום) — אל תוסיף דמות מלאכותית שלא הייתה שם; התאם רק את הסצנה, האווירה והפרטים לנושא, על בסיס התמונה המקורית. בשני המקרים: צייר בסגנון מאויר (לא פוטוריאליסטי), לא איור שטוח או גנרי. חשוב: התוצאה צריכה להיות מרשימה, דרמטית ומגניבה ויזואלית — קומפוזיציה נועזת, תאורה אטמוספרית, עומק ופרטים עשירים ברקע. סגנון אמנותי-עתידני איכותי (ברמת קונספט-ארט של קולנוע מדע בדיוני), גוונים סביב הצבע '+t.accent+', קומפוזיציה פורטרטית (לאורך), ללא טקסט בתמונה.';
       const res=await fetch('/.netlify/functions/generate-image',{
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({prompt, image:base64, mimeType: blob.type||'image/jpeg'})
