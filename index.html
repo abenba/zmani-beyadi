@@ -383,6 +383,8 @@
     overflow:hidden;border-radius:4px}
   .pcBg{position:absolute;inset:0}
   .pcBg svg{position:absolute;inset:0;width:100%;height:100%}
+  .pcTopicIcon{position:absolute;top:6%;left:50%;transform:translateX(-50%);width:220px;height:220px;opacity:.55}
+  .pcTopicIcon svg{width:100%;height:100%;display:block}
   .pcContent{position:relative;z-index:1;padding:44px 34px 36px}
   .pcTitle{
     font-family:'Frank Ruhl Libre',serif;font-size:25px;font-weight:700;color:#fff;
@@ -1000,6 +1002,7 @@
 
 <div id="postcardCard">
   <div class="pcBg" id="pcBg"></div>
+  <div class="pcTopicIcon" id="pcTopicIcon" style="display:none"></div>
   <div class="pcContent">
     <div class="pcTitle">🤳 סלפי מהעתיד</div>
     <div class="pcPhotoFrame" id="pcPhotoFrame"></div>
@@ -1750,10 +1753,13 @@
       const bucket=bucketForYears(Math.min(100,Math.max(1,yearsAhead)));
       const entry=encyEntry(selectedPerkTopicId,bucket);
       $('pcBg').style.background=`radial-gradient(circle at 50% 28%, ${t.accent}2e, #0B0E14 72%)`;
-      $('pcBg').innerHTML=buildEncyIllustration(t.motif,t.accent).replace('<svg ','<svg width="340" height="340" style="position:absolute;top:6%;left:50%;transform:translateX(-50%);opacity:0.55" ');
+      $('pcBg').innerHTML='';
+      $('pcTopicIcon').innerHTML=buildEncyIllustration(t.motif,t.accent);
+      $('pcTopicIcon').style.display='block';
       $('pcCaption').textContent=entry.teaser+' '+entry.body.split('\n\n')[0];
       selectedPerkTopicId=null;
     }else{
+      $('pcTopicIcon').style.display='none';
       $('pcBg').style.background=PRED_PALETTES[key].bg;
       $('pcBg').innerHTML=buildSceneSVG(key,targetYear);
       $('pcCaption').textContent='רגע שנתפס בזמן שלך, ב-'+pad(d.getHours())+':'+pad(d.getMinutes());
