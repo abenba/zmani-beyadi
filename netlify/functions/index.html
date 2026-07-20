@@ -1,0 +1,3162 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>משחקי זמן</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800&family=IBM+Plex+Mono:wght@300;500;700&family=Caveat:wght@500&family=Rubik:wght@400&family=Frank+Ruhl+Libre:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1F4; --ink:#1B2430; --ink-soft:#5A6572;
+    --amber:#D98E2B; --amber-deep:#A8660D;
+    --blue:#3E7BC4; --blue-deep:#24528F;
+    --line:#D4DAE0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;height:100dvh;overflow-x:hidden;overflow-y:auto}
+  #bootScreen{
+    position:fixed;inset:0;z-index:100;background:#0B0E14;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    transition:opacity .8s ease}
+  #bootScreen.fading{opacity:0;pointer-events:none}
+  #bootScreen.hidden{display:none}
+  .bootInner{text-align:center;color:#fff;padding:20px}
+  .bootTitle{font-family:'IBM Plex Mono',monospace;font-size:29px;font-weight:700;letter-spacing:.03em;color:#C9BCF2;text-shadow:0 0 22px rgba(139,111,232,.5)}
+  .bootQuoteEn{
+    margin-top:32px;font-family:'Caveat',cursive;font-weight:500;font-size:24px;line-height:1.4;
+    color:#EFEFE9;text-shadow:0 0 1px rgba(255,255,255,.5);transform:skewX(-3deg);direction:ltr;
+    text-align:left;width:100%}
+  .bootQuoteHe{
+    margin-top:18px;font-family:'Rubik',sans-serif;font-weight:400;font-size:16px;line-height:1.6;
+    color:#EFEFE9;text-shadow:0 0 1px rgba(255,255,255,.5);transform:skewX(-4deg);letter-spacing:.01em;
+    text-align:right;width:100%}
+  .bootAnonym{
+    margin-top:8px;font-family:'Caveat',cursive;font-weight:500;font-size:16px;
+    color:#EFEFE9;text-shadow:0 0 1px rgba(255,255,255,.5);letter-spacing:.04em;
+    text-align:left;width:100%;direction:ltr}
+  .bootSub{margin-top:34px;font-family:'Heebo';font-size:13px;color:#9FA6B3;animation:bootPulse 1.6s ease-in-out infinite}
+  @keyframes bootPulse{0%,100%{opacity:.5}50%{opacity:1}}
+  .bootDigits{margin-top:22px;font-family:'IBM Plex Mono',monospace;font-size:38px;font-weight:700;color:#fff;direction:ltr;letter-spacing:.02em}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'Heebo',system-ui,sans-serif;
+    display:flex;flex-direction:column;
+    padding:calc(env(safe-area-inset-top) + 12px) 20px calc(env(safe-area-inset-bottom) + 14px);
+    position:relative; transition:background 1.4s;
+  }
+  body.slow{background:#F5EDDE}
+  body.fast{background:#E4EBF5}
+  body.ultra{background:#EDE7F8}
+  #stream{position:absolute;inset:0;z-index:0;pointer-events:none}
+
+  header{position:relative;z-index:2;flex-shrink:0;display:flex;justify-content:space-between;align-items:center}
+  .brand{font-weight:600;font-size:15px}
+  .brand small{font-weight:300;color:var(--ink-soft);margin-inline-start:6px;font-size:12px}
+  .hRight{display:flex;align-items:center;gap:10px}
+  .soundBtn{
+    width:40px;height:40px;border-radius:50%;border:1px solid var(--line);
+    background:rgba(255,255,255,.8);font-size:17px;color:var(--ink);
+  }
+  .soundBtn.on{background:var(--ink);color:#fff;border-color:transparent}
+  .soundWrap{position:relative}
+  .soundHint{
+    position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+    font-size:18px;font-weight:800;color:#3E7BC4;pointer-events:none;
+    animation:soundHintBounce 1.1s ease-in-out infinite}
+  .soundHint.hidden{display:none}
+  @keyframes soundHintBounce{0%,100%{transform:translateX(-50%) translateY(0);opacity:.55}50%{transform:translateX(-50%) translateY(5px);opacity:1}}
+  .closeBtn{
+    width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
+    background:rgba(255,255,255,.8);font-size:14px;color:#8B95A0}
+  #worldFace{width:64px;height:64px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(27,36,48,.16)}
+
+  #closeOverlay{
+    position:fixed;inset:0;z-index:80;display:none;place-items:center;
+    background:#12151C;color:#EDE6D6;text-align:center;padding:30px}
+  #closeOverlay.open{display:grid}
+  #closeOverlay h3{font-size:19px;margin-bottom:10px}
+  #closeOverlay p{font-size:13.5px;color:#B8AE97;line-height:1.8;max-width:280px;margin:0 auto 18px}
+  #closeOverlay button{
+    font-family:'Heebo';font-size:13.5px;font-weight:700;color:#EDE6D6;
+    background:#ffffff14;border:1px solid #ffffff2a;border-radius:99px;padding:10px 22px}
+
+  main{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:7px;padding-top:4px;padding-bottom:230px}
+  .mainTitle{
+    font-size:19px;font-weight:800;color:var(--ink);letter-spacing:.015em;
+    margin-bottom:6px}
+  .worldLine{
+    font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--ink-soft);
+    direction:ltr;display:flex;align-items:baseline;
+    padding-bottom:5px;border-bottom:1px solid var(--line);margin-bottom:-4px;
+  }
+  .worldLine .wsec{font-size:.8em;margin-left:.25em;min-width:2ch;display:inline-block}
+  .clockTag{font-size:12px;color:var(--ink-soft);margin-bottom:-14px}
+  .clockDate{font-size:13px;font-weight:700;color:#8B6FD8;margin-top:-6px;min-height:18px}
+  .clockDate.waypointFlash{animation:wpFlash .32s ease-out}
+  @keyframes wpFlash{0%{opacity:0;transform:translateY(-3px) scale(.96)}35%{opacity:1;transform:translateY(0) scale(1.04)}100%{opacity:1;transform:scale(1)}}
+  .clock{
+    font-family:'IBM Plex Mono',monospace;font-weight:300;font-variant-numeric:tabular-nums;
+    font-size:clamp(50px,16vw,80px);direction:ltr;
+    display:flex;align-items:baseline;
+    padding:2px 10px;border-radius:16px;
+    transition:color .5s,text-shadow .5s,font-weight .35s,letter-spacing .35s,
+               background .5s,box-shadow .5s,transform .35s;
+  }
+  body.slow .clock{color:#6B4A12;text-shadow:0 0 24px rgba(217,142,43,.35)}
+  /* שעון העתיד: כשהזמן שלך רץ מהר יותר מהעולם, הוא הופך למונה בולט, "מתכתי", כמעט תעשייתי — כי זה הסיפור האמיתי */
+  body.fast .clock{
+    font-size:clamp(34px,11vw,52px);
+    color:#DCEBFF;font-weight:800;letter-spacing:.012em;
+    background:linear-gradient(180deg,#2E5488,#152C4C);
+    text-shadow:0 0 10px rgba(140,195,255,.9),0 0 28px rgba(62,123,196,.55);
+    box-shadow:0 0 0 1px rgba(160,205,255,.35) inset,0 8px 22px rgba(20,45,80,.45);
+    animation:futurePulse 1.15s ease-in-out infinite;
+  }
+  body.ultra .clock{
+    font-size:clamp(34px,11vw,52px);
+    color:#F6F1FF;font-weight:700;letter-spacing:.012em;
+    background:linear-gradient(180deg,#4B3496,#2A1B5E);
+    text-shadow:0 0 6px rgba(180,150,255,.5);
+    box-shadow:0 0 0 1px rgba(190,165,240,.3) inset,0 8px 20px rgba(50,30,110,.4);
+    animation:futurePulse .8s ease-in-out infinite;
+  }
+  @keyframes futurePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.018)}}
+  .clock .sec{font-size:.52em;font-weight:500;margin-left:.18em;display:inline-block;min-width:2ch;transform-origin:50% 80%}
+  .tickBeat{animation:beat var(--beat,1s) ease-out}
+  @keyframes beat{0%{transform:scale(1.28)}100%{transform:scale(1)}}
+
+  .gap{
+    font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:22px;direction:ltr;
+    padding:6px 18px;border-radius:99px;border:none;cursor:pointer;
+    background:rgba(255,255,255,.6);color:var(--ink-soft);
+    box-shadow:0 2px 10px rgba(27,36,48,.08);
+    transition:color .5s,background .5s,box-shadow .5s,transform .15s;
+  }
+  .gap:active{transform:scale(.95)}
+  .gap.plus{color:#fff;background:linear-gradient(160deg,var(--amber),var(--amber-deep));box-shadow:0 5px 18px rgba(168,102,13,.4)}
+  .gap.minus{color:#fff;background:linear-gradient(160deg,var(--blue),var(--blue-deep));box-shadow:0 5px 18px rgba(36,82,143,.4)}
+  .gap-label{font-size:11.5px;color:var(--ink-soft);margin-top:-2px}
+  .gap-label u{text-decoration:none;border-bottom:1px dotted var(--ink-soft);cursor:pointer;padding:4px 2px}
+  #gapWhen{font-weight:700;color:var(--ink);transition:color .5s}
+  #gapWhen.plus{color:var(--amber-deep)}
+  #gapWhen.minus{color:var(--blue-deep)}
+  .state{font-size:15px;font-weight:600;min-height:19px;text-align:center;color:var(--ink-soft);transition:color .6s}
+  .state.slow{color:var(--amber-deep)}
+  .state.fast{color:var(--blue-deep)}
+
+  .scrollHint{
+    position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 205px);
+    transform:translateX(-50%);z-index:19;display:none;
+    font-family:'Heebo';font-size:12px;font-weight:700;color:#5A6572;
+    background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:99px;
+    padding:6px 14px;box-shadow:0 2px 10px rgba(27,36,48,.12);
+    animation:scrollHintBounce 1.4s ease-in-out infinite;pointer-events:none}
+  .scrollHint.show{display:block}
+  @keyframes scrollHintBounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(4px)}}
+  footer{
+    position:fixed;left:0;right:0;bottom:0;z-index:20;
+    background:var(--paper);display:flex;flex-direction:column;gap:10px;
+    padding:14px 20px calc(env(safe-area-inset-bottom) + 14px);
+    box-shadow:0 -8px 16px -8px rgba(27,36,48,.12)}
+  .camLaunch{
+    align-self:center;display:flex;align-items:center;gap:8px;
+    font-family:'Heebo';font-size:15px;font-weight:600;color:#fff;
+    background:var(--ink);border:none;border-radius:99px;padding:12px 26px;
+    box-shadow:0 4px 14px rgba(27,36,48,.3);
+  }
+  .camLaunch svg{width:19px;height:19px}
+  .dial{display:none;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .dial button{
+    font-family:'Heebo';padding:10px 4px;border-radius:16px;border:1px solid var(--line);
+    background:rgba(255,255,255,.78);color:var(--ink);transition:all .35s;
+    display:flex;flex-direction:column;gap:2px;align-items:center;
+  }
+  .dial b{font-size:15px;font-weight:600}
+  .dial i{font-style:normal;font-size:11px;color:var(--ink-soft)}
+  .dial button.on{border-color:transparent}
+  .dial button.on b,.dial button.on i{color:#fff}
+  .bUltra.on{background:linear-gradient(160deg,#8B6FE8,#4A2FA0)}
+  .bNorm.on{background:rgba(255,255,255,.78);border:1px solid var(--line)}
+  .bNorm.on b{color:var(--ink)}
+  .bNorm.on i{color:var(--ink-soft)}
+  .bFast.on{background:linear-gradient(160deg,var(--blue),var(--blue-deep))}
+  .budget{display:none;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-soft)}
+  .budget .bar{flex:1;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+  .budget .bar i{display:block;height:100%;width:100%;background:var(--ink);border-radius:2px;transition:width .5s linear}
+  .budget.low .bar i{background:#C24A3E}
+
+  /* ---------- עדשת הזמן ---------- */
+  #camView{position:fixed;inset:0;background:#000;z-index:25;display:none;flex-direction:column}
+  #camView.open{display:flex}
+  #camCanvas{position:absolute;inset:0;width:100%;height:100%}
+  .camTop{
+    position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;
+    padding:calc(env(safe-area-inset-top) + 10px) 16px 6px;
+    color:#fff;font-family:'IBM Plex Mono',monospace;
+    background:linear-gradient(#000a,#0000);
+  }
+  .camTop .t{font-size:20px;direction:ltr}
+  .camTop .g{font-size:12px;opacity:.85;direction:ltr}
+  .camClose{background:#0006;border:none;color:#fff;font-size:20px;width:38px;height:38px;border-radius:50%}
+  /* מונה שרץ בפינת מסך המצלמה — מזכיר לצלם, עוד לפני הצילום, שהוא מצלם מהעתיד */
+  .futureCounter{
+    display:flex;flex-direction:column;align-items:center;gap:1px;
+    font-family:'IBM Plex Mono',monospace;direction:ltr;
+    padding:3px 8px 4px;border-radius:9px;min-width:60px;
+    background:rgba(8,12,20,.55);border:1px solid rgba(255,255,255,.14);
+    transition:border-color .4s,box-shadow .4s;
+  }
+  .futureCounter .fcLabel{font-size:8px;letter-spacing:.05em;font-family:'Heebo';font-weight:700;color:#9FB3D6}
+  .futureCounter .fcNum{font-size:15px;font-weight:700;color:#8FD6FF;text-shadow:0 0 8px rgba(90,190,255,.6)}
+  .futureCounter.ultra{border-color:rgba(200,165,255,.4);box-shadow:0 0 14px rgba(139,111,232,.35)}
+  .futureCounter.ultra .fcLabel{color:#C6B4EF}
+  .futureCounter.ultra .fcNum{color:#D2B8FF;text-shadow:0 0 10px rgba(160,110,255,.75)}
+  .futureCounter.fast{border-color:rgba(140,195,255,.4);box-shadow:0 0 12px rgba(62,123,196,.3)}
+  .futureCounter.tick{animation:fcTick .22s ease-out}
+  @keyframes fcTick{0%{transform:scale(1.22)}100%{transform:scale(1)}}
+  .lensCaption{
+    position:relative;z-index:2;text-align:center;color:#fff;
+    font-family:'Heebo';font-size:13.5px;font-weight:400;
+    padding:2px 16px 8px;text-shadow:0 1px 4px #000;
+    background:linear-gradient(#0007,#0000);min-height:24px;
+  }
+  .camMsg{position:absolute;inset:0;display:none;place-items:center;z-index:3;color:#fff;text-align:center;padding:30px;font-size:15px;line-height:1.7}
+  .camBottom{
+    position:relative;z-index:2;margin-top:auto;display:flex;flex-direction:column;gap:8px;
+    padding:10px 16px calc(env(safe-area-inset-bottom) + 16px);
+    background:linear-gradient(#0000,#000a);
+  }
+  .camHint{text-align:center;color:#fffc;font-size:11px;font-family:'Heebo';line-height:1.6;padding:0 10px}
+  .camBtnCol{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .camBtnCol small{color:#fff9;font-size:10px;font-family:'Heebo'}
+  .camDial{display:none;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .camDial button{
+    font-family:'Heebo';font-size:13.5px;font-weight:600;padding:10px 4px;border-radius:12px;
+    border:1px solid #fff3;background:#0005;color:#fff;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:all .3s;
+  }
+  .camDial .bUltra.on{background:#6B4FD8;border-color:transparent}
+  .camDial .bNorm.on{background:#0005;border-color:#fff3}
+  .camDial .bFast.on{background:var(--blue);border-color:transparent}
+  .camSync{
+    align-self:center;font-family:'Heebo';font-size:12px;color:#fffc;
+    background:none;border:none;border-bottom:1px dotted #fff8;padding:2px 2px 3px;
+  }
+  .camRow{display:flex;justify-content:space-around;align-items:center}
+  .shutter{width:70px;height:70px;border-radius:50%;border:4px solid #fff;background:#fff;box-shadow:0 0 0 3px #0006;touch-action:none}
+  .shutter:active{transform:scale(.92)}
+  .recBtn{width:54px;height:54px;border-radius:50%;border:3px solid #fff;background:transparent;display:grid;place-items:center}
+  .recBtn i{width:22px;height:22px;border-radius:50%;background:#E4453A;transition:border-radius .25s,transform .25s}
+  .recBtn.rec i{border-radius:5px;transform:scale(.8)}
+  .flipBtn{width:54px;height:54px;border-radius:50%;border:none;background:#0006;color:#fff;font-size:22px}
+  .zoomBtn{width:54px;height:54px;border-radius:50%;border:1px solid #fff4;background:#0006;color:#fff;
+    font-family:'IBM Plex Mono',monospace;font-size:15px;direction:ltr}
+  .zoomBtn.z2{background:#fff;color:#111;border-color:transparent}
+  .recTime{position:absolute;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%);
+    z-index:2;color:#fff;background:#E4453A;font-family:'IBM Plex Mono';font-size:13px;
+    padding:3px 12px;border-radius:99px;display:none;direction:ltr}
+
+  #shot{position:fixed;inset:0;background:#000;z-index:30;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px}
+  #shot.open{display:flex}
+  #shot img,#shot video{max-width:100%;max-height:72vh;border-radius:14px}
+  #shot .acts{display:flex;gap:10px}
+  #shot button,#shot a{
+    font-family:'Heebo';font-size:14.5px;font-weight:600;padding:11px 22px;border-radius:99px;
+    border:1px solid #fff5;background:#ffffff18;color:#fff;text-decoration:none;
+  }
+  #shot .primary{background:#fff;color:#111;border-color:transparent}
+  #shot .hint{color:#fff9;font-size:12px}
+  #makePostcard{
+    font-family:'Heebo';font-size:13.5px;font-weight:700;padding:9px 20px;border-radius:99px;
+    border:1px solid rgba(184,147,63,.5);background:rgba(184,147,63,.16);color:#F0D9A0}
+
+  @media (prefers-reduced-motion: reduce){ .tickBeat{animation:none} }
+
+  /* ---------- איגרת מן העתיד ---------- */
+  .letterLaunch{
+    margin-top:2px;font-family:'Heebo';font-size:12.5px;font-weight:700;color:#1E4272;
+    background:#fff;border:1.5px solid #3E7BC4;border-radius:99px;padding:7px 16px;
+    box-shadow:0 3px 12px rgba(62,123,196,.22)}
+  .letterLaunch.pending{color:#5A7396;border-color:#C7D2E0;box-shadow:none}
+  .llRow{display:flex;align-items:center;justify-content:center;gap:9px}
+  .llOpt{background:none;border:none;font-family:'Heebo';font-size:13px;font-weight:700;color:inherit;padding:0;cursor:pointer}
+  .llSlash{color:#B7C3D6;font-weight:400}
+  .letterLaunch.pending .llRow{display:none}
+  .letterLaunch:not(.pending) #llLabel{display:none}
+  .llBar{display:none;height:3px;border-radius:2px;background:#E4EBF5;overflow:hidden;margin-top:6px}
+  .letterLaunch.pending .llBar{display:block}
+  .llBar b{display:block;height:100%;width:0%;background:linear-gradient(90deg,#8BB3E8,#3E7BC4);transition:width .4s}
+  #letterModal{
+    position:fixed;inset:0;z-index:60;display:none;place-items:center;
+    background:rgba(10,14,20,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:20px}
+  #letterModal.open{display:grid}
+  .lmBox{
+    width:100%;max-width:380px;background:#fff;border-radius:20px;padding:22px;
+    display:flex;flex-direction:column;gap:12px;max-height:88vh;overflow:auto}
+  .lmBox h3{font-size:17px;font-weight:800;color:#1B2430}
+  .lmBox p{font-size:12.5px;color:#5A6572;line-height:1.6}
+  .lmBgPreview{
+    display:flex;align-items:center;gap:10px;padding:10px 12px;
+    background:#FBF6EA;border:1px solid #E3D2A0;border-radius:12px}
+  .lmBgPreviewIcon{width:36px;height:36px;flex-shrink:0}
+  .lmBgPreviewIcon svg{width:100%;height:100%;display:block}
+  .lmBgPreviewText{font-size:11.5px;font-weight:600;color:#7A6B42;line-height:1.55}
+  .lmBgPreviewText::before{content:'רקע שישולב באיגרת — ';font-weight:800;color:#A5762B}
+  .lmAiImg{display:flex;flex-direction:column;gap:8px}
+  .lmAiImg button{
+    font-family:'Heebo';font-size:13px;font-weight:700;color:#4A2FA0;
+    background:#F1ECFB;border:1.5px solid #C9B4F0;border-radius:99px;padding:10px 16px}
+  .lmAiImg button:disabled{opacity:.6}
+  .lmAiImgStatus{font-size:11px;color:#8B95A0;text-align:center}
+  .lmAiImgPreview{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .lmAiImgPreview img{width:100%;max-width:220px;border-radius:10px;display:block}
+  .lmAiImgPreview label{font-size:11.5px;color:#5A6572;display:flex;align-items:center;gap:6px}
+  .lcTopicImg{margin:0 0 18px;width:100%;border-radius:6px;overflow:hidden}
+  .lcTopicImg img{width:100%;display:block}
+  .lmBox input,.lmBox textarea{
+    font-family:'Heebo';font-size:14px;padding:12px;border-radius:12px;border:1px solid #D4DAE0;
+    background:#F7F8FA;color:#1B2430;resize:vertical}
+  .lmBox textarea{min-height:110px}
+  .lmAttach{background:#F7F8FA;border-radius:12px;padding:12px;border:1px dashed #C9D2DC}
+  .lmAttachEmpty{font-size:11.5px;color:#8B95A0;line-height:1.7;text-align:center}
+  .lmAttachGot{display:flex;flex-direction:column;gap:9px}
+  .lmGalleryHead{display:flex;align-items:center;gap:10px}
+  .lmGalleryHead b{font-size:13px;color:#1B2430}
+  .lmAttachToggle{margin-inline-start:auto;font-size:12px;color:#5A6572;display:flex;align-items:center;gap:5px;flex:none}
+  .lmGallery{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scroll-snap-type:x proximity}
+  .lmGallery::-webkit-scrollbar{display:none}
+  .lmThumb{
+    flex:none;width:52px;height:70px;border-radius:8px;object-fit:cover;
+    border:2px solid transparent;opacity:.55;scroll-snap-align:center}
+  .lmThumb.sel{border-color:#3E7BC4;opacity:1;box-shadow:0 2px 8px rgba(62,123,196,.35)}
+  .lmVoiceChip{
+    flex:none;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#5A6572;
+    background:#EEF1F4;border:2px solid transparent;border-radius:10px;padding:9px 13px;direction:ltr}
+  .lmVoiceChip.sel{border-color:#3E7BC4;color:#1E4272;background:#E4EBF5}
+  .lmActs{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+  .lmActs button{
+    font-family:'Heebo';font-size:13.5px;font-weight:700;padding:10px 20px;border-radius:99px;border:none}
+  .lmActs .cancel{background:#EEF1F4;color:#5A6572}
+  .lmActs .create{background:linear-gradient(160deg,#5A9BE0,#1E4272);color:#fff}
+
+  /* תבנית האיגרת עצמה — נלכדת לתמונה */
+  #letterCard{
+    width:640px;padding:52px 62px 42px;background:linear-gradient(170deg,#FBF6EA,#F0E8D4);
+    color:#2A2416;font-family:'Heebo';position:fixed;left:-9999px;top:0;text-align:center}
+  #letterCard::before{
+    content:'';position:absolute;inset:14px;border:1px solid #C9B888;border-radius:2px;pointer-events:none}
+  #letterCard::after{
+    content:'';position:absolute;inset:19px;border:1px solid rgba(184,147,63,.35);border-radius:1px;pointer-events:none}
+  .lcOrnament{width:88px;height:88px;margin:0 auto 14px}
+  .lcTitle{font-family:'Frank Ruhl Libre',serif;font-size:30px;font-weight:700;color:#2A2416;margin-bottom:10px;letter-spacing:.02em}
+  .lcWhen{
+    margin-bottom:22px;padding:14px 18px;border-radius:10px;
+    background:rgba(184,147,63,.07);border:1px solid #E0D2A0;
+    display:flex;flex-direction:column;gap:9px;text-align:right}
+  .lcRow{display:flex;align-items:baseline;gap:7px;font-size:12.5px;color:#7A6B42;flex-wrap:wrap}
+  .lcRowKey{font-size:11px;color:#A2946A;min-width:22px}
+  .lcRow b{color:#3A3018;font-weight:700;font-size:13.5px}
+  .lcRowWorld{margin-inline-start:auto;font-size:10.5px;color:#B8933F;font-weight:600;
+    background:rgba(184,147,63,.14);border-radius:99px;padding:2px 9px}
+  .lcRow b:last-child{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;color:#4A3F22}
+  .lcPhoto{margin:0 auto 20px;width:220px;border-radius:4px;overflow:hidden;
+    box-shadow:0 6px 18px rgba(42,36,22,.28);border:6px solid #fff;transform:rotate(-1.2deg)}
+  .lcPhoto img{width:100%;display:block}
+  .lcBackground{
+    display:flex;align-items:center;gap:12px;margin:0 0 18px;padding:12px 14px;
+    background:rgba(184,147,63,.08);border:1px solid rgba(184,147,63,.3);border-radius:10px;text-align:right}
+  .lcBgIcon{width:44px;height:44px;flex-shrink:0}
+  .lcBgIcon svg{width:100%;height:100%;display:block}
+  .lcBgText{font-family:'Heebo';font-size:12.5px;font-weight:700;color:#7A6B42;line-height:1.6}
+  .lcBgText::before{content:'רקע — ';font-weight:800;color:#A5762B}
+  .lcBody{font-family:'Frank Ruhl Libre',serif;font-weight:400;font-size:17.5px;line-height:1.95;color:#2A2416;white-space:pre-wrap;min-height:90px;text-align:right}
+  .lcFoot{margin-top:32px}
+  .lcFootLine{width:60px;height:1px;background:#C9B888;margin:0 auto 14px}
+  .lcFootBrand{font-family:'Frank Ruhl Libre',serif;font-size:14px;font-weight:700;color:#7A6B42;letter-spacing:.08em}
+  .lcFootTag{font-size:10.5px;color:#A79868;margin-top:3px}
+  .lcSeal{
+    display:inline-flex;align-items:center;gap:6px;margin:-8px auto 22px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:#8A6F2A;
+    background:rgba(184,147,63,.1);border:1px solid #D8C48A;border-radius:99px;padding:5px 14px}
+  .lcSeal::before{content:'◐';font-size:12px;color:#B8933F}
+
+  /* ---------- גלויית סלפי: התמונה שלך על רקע העולם העתידי שאליו הגעת ---------- */
+  #postcardCard{
+    width:480px;position:fixed;left:-9999px;top:0;text-align:center;font-family:'Heebo';
+    overflow:hidden;border-radius:4px}
+  .pcBg{position:absolute;inset:0}
+  .pcBg svg{position:absolute;inset:0;width:100%;height:100%}
+  .pcContent{position:relative;z-index:1;padding:44px 34px 36px}
+  .pcTitle{
+    font-family:'Frank Ruhl Libre',serif;font-size:25px;font-weight:700;color:#fff;
+    text-shadow:0 2px 14px rgba(0,0,0,.6);margin-bottom:26px}
+  .pcPhotoFrame{
+    width:300px;height:300px;margin:0 auto;border-radius:50%;overflow:hidden;
+    background-size:cover;background-position:center;background-repeat:no-repeat;
+    border:8px solid rgba(255,255,255,.92);box-shadow:0 16px 40px rgba(0,0,0,.5)}
+  .pcDateTag{
+    margin-top:20px;display:inline-flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:700;color:#fff;
+    background:rgba(0,0,0,.32);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+    border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:8px 18px}
+  .pcCaption{margin-top:14px;font-family:'Frank Ruhl Libre',serif;font-size:16px;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+  .pcDistance{margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#D8CBFF;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+  .pcSeal{margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,.7);letter-spacing:.05em}
+  .pcFoot{margin-top:22px}
+  .pcFootLine{width:50px;height:1px;background:rgba(255,255,255,.4);margin:0 auto 10px}
+  .pcFootBrand{font-family:'Frank Ruhl Libre',serif;font-size:13px;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.06em}
+  #postcardSendModal{
+    position:fixed;inset:0;z-index:60;display:none;place-items:center;
+    background:rgba(10,14,20,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:20px}
+  #postcardSendModal.open{display:grid}
+
+  /* ---------- מסך שליחת האיגרת ---------- */
+  #letterSendModal{
+    position:fixed;inset:0;z-index:65;display:none;place-items:center;
+    background:rgba(8,11,16,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:20px}
+  #letterSendModal.open{display:grid}
+  .lsBox{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .lsPreviewWrap{width:100%;max-height:46vh;overflow:auto;border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.4)}
+  .lsPreviewWrap img{width:100%;display:block}
+  .lsMain{
+    width:100%;font-family:'Heebo';font-size:16px;font-weight:800;color:#1B1608;
+    background:linear-gradient(160deg,#F0C878,#D9A94A);border:none;border-radius:99px;
+    padding:15px;box-shadow:0 0 26px rgba(232,180,90,.4)}
+  .lsChannels{display:flex;gap:10px;width:100%}
+  .lsCh{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+    font-family:'Heebo';font-size:11px;font-weight:600;color:#EDE6D6;
+    background:#ffffff12;border:1px solid #ffffff26;border-radius:14px;padding:10px 4px}
+  .lsCh span{font-size:22px}
+  .lsWa{border-color:#2FBE5A55}.lsGm{border-color:#E5564655}.lsSm{border-color:#3E9BE055}
+  .lsHint{font-size:11px;color:#8B8270;text-align:center;line-height:1.6;padding:0 8px}
+  .lsSave{
+    font-family:'Heebo';font-size:13px;font-weight:600;color:#EDE6D6;text-decoration:none;
+    border-bottom:1px dotted #8B8270;padding-bottom:2px}
+  .lsClose{
+    margin-top:6px;font-family:'Heebo';font-size:14px;font-weight:700;color:#EDE6D6;
+    background:#ffffff16;border:1px solid #ffffff33;border-radius:99px;padding:11px 30px;width:100%}
+
+  /* ---------- הודעה קולית מן העתיד ---------- */
+  #voiceModal{
+    position:fixed;inset:0;z-index:60;display:none;place-items:center;
+    background:rgba(10,14,20,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:20px}
+  #voiceModal.open{display:grid}
+  .vmBox{
+    width:100%;max-width:360px;background:#fff;border-radius:20px;padding:26px 22px;
+    display:flex;flex-direction:column;align-items:center;gap:14px;max-height:88vh;overflow:auto;text-align:center}
+  .vmBox h3{font-size:17px;font-weight:800;color:#1B2430}
+  .vmBox p{font-size:12.5px;color:#5A6572;line-height:1.6}
+  .vmRecBtn{
+    width:84px;height:84px;border-radius:50%;border:none;font-size:32px;
+    background:linear-gradient(160deg,#5A9BE0,#1E4272);color:#fff;box-shadow:0 6px 20px rgba(30,66,114,.35)}
+  .vmRecBtn.recording{background:linear-gradient(160deg,#E0685A,#8B1E2B);animation:vmPulse 1.1s ease-in-out infinite}
+  @keyframes vmPulse{0%,100%{box-shadow:0 0 0 0 rgba(224,104,90,.5)}50%{box-shadow:0 0 0 16px rgba(224,104,90,0)}}
+  .vmTimer{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:#1B2430;direction:ltr}
+  .vmHint{font-size:12px;color:#8B95A0}
+  .vmPreviewWrap{display:none;flex-direction:column;align-items:center;gap:10px;width:100%}
+  .vmPreviewWrap audio{width:100%}
+  .vmPreviewActs{display:flex;gap:8px;width:100%}
+  .vmPreviewActs button{
+    flex:1;font-family:'Heebo';font-size:13px;font-weight:700;padding:11px;border-radius:99px;border:none}
+  #vmReRecord{background:#EEF1F4;color:#5A6572}
+  #vmSend{background:linear-gradient(160deg,#5A9BE0,#1E4272);color:#fff}
+  #vmCancel{font-family:'Heebo';font-size:12.5px;color:#8B95A0;background:none;border:none;margin-top:2px}
+
+  #voiceSendModal{
+    position:fixed;inset:0;z-index:65;display:none;place-items:center;
+    background:rgba(8,11,16,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:20px}
+  #voiceSendModal.open{display:grid}
+  .vsBox{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .vsBox audio{width:100%}
+  .predLaunch{
+    margin-top:2px;font-family:'Heebo';font-size:12.5px;font-weight:800;color:#4A2FA0;
+    background:#F1ECFB;border:1.5px solid #C9B4F0;border-radius:99px;padding:7px 14px;
+    box-shadow:0 2px 10px rgba(139,111,232,.25);animation:predPulse 2.4s ease-in-out infinite}
+  .predLaunch span{direction:ltr;display:inline-block}
+  @keyframes predPulse{0%,100%{box-shadow:0 2px 10px rgba(139,111,232,.25)}50%{box-shadow:0 2px 16px rgba(139,111,232,.5)}}
+
+  /* ---------- אנציקלופדיית העתיד: רשת 12 האריחים (בתוך מסך "מה קורה כאן?") ---------- */
+  .encyGrid{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:420px;width:100%;margin-top:22px}
+  .encyTile{
+    background:rgba(10,14,20,.5);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+    border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:14px 12px;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+  .encyTile svg{width:56px;height:56px}
+  .encyTile b{font-size:12.5px;font-weight:700;color:#fff;line-height:1.3}
+  .encyTile span{font-size:10.5px;color:#B9C0CC;line-height:1.4}
+
+  /* ---------- ערך בודד באנציקלופדיה ---------- */
+  /* ---------- על מה מהעתיד? בחירת נושא לפני איגרת/סלפי ---------- */
+  #topicPicker{position:fixed;inset:0;z-index:76;display:none;overflow:hidden;background:#0B0E14}
+  #topicPicker.open{display:block}
+  .topicPickerBg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 20%,#1a2340,#05070f 75%)}
+  .topicPickerContent{
+    position:relative;z-index:2;min-height:100%;overflow-y:auto;
+    display:flex;flex-direction:column;align-items:center;
+    padding:calc(env(safe-area-inset-top) + 40px) 18px calc(env(safe-area-inset-bottom) + 40px);color:#fff}
+  .topicPickerTitle{font-family:'Frank Ruhl Libre',serif;font-size:20px;font-weight:700;margin-bottom:20px}
+
+  #encyDetail{position:fixed;inset:0;z-index:74;display:none;overflow:hidden;background:#0B0E14}
+  #encyDetail.open{display:block}
+  .encyDetailBg{position:absolute;inset:0}
+  .encyDetailContent{
+    position:relative;z-index:2;min-height:100%;overflow-y:auto;
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    padding:calc(env(safe-area-inset-top) + 26px) 24px calc(env(safe-area-inset-bottom) + 26px);color:#fff}
+  .encyClose{
+    position:fixed;z-index:5;top:calc(env(safe-area-inset-top) + 8px);left:16px;
+    background:#0006;border:none;color:#fff;font-size:18px;width:36px;height:36px;border-radius:50%}
+  .encyDetailIcon{width:120px;height:120px;margin-top:30px}
+  .encyDetailTitle{font-family:'Frank Ruhl Libre',serif;font-size:22px;font-weight:700;margin-top:14px}
+  .encyDetailYear{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#B9C0CC;margin-top:4px;direction:ltr}
+  .encyDetailBody{
+    max-width:340px;margin-top:20px;background:rgba(10,14,20,.5);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+    border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:20px;font-size:14.5px;font-weight:500;line-height:1.95;color:#FFFFFF;text-align:right;white-space:pre-wrap}
+  .encyBack{
+    margin-top:22px;font-family:'Heebo';font-size:12.5px;font-weight:700;color:#fff;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:10px 22px}
+
+  /* ---------- תחזית CLAUDE — מסך מלא ---------- */
+  #predictionScreen{position:fixed;inset:0;z-index:70;display:none;overflow:hidden;background:#0B0E14}
+  #predictionScreen.open{display:block}
+  .predBg{position:absolute;inset:0;transition:background 1s ease}
+  .predBg svg{position:absolute;inset:0;width:100%;height:100%}
+  #predVideo{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    transform:scaleX(-1);mix-blend-mode:screen;opacity:.5;display:none}
+  #predVideo.on{display:block}
+  .predContent{
+    position:relative;z-index:2;height:100%;overflow-y:auto;
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    padding:calc(env(safe-area-inset-top) + 26px) 22px calc(env(safe-area-inset-bottom) + 26px);color:#fff}
+  .predClose{
+    position:fixed;z-index:5;top:calc(env(safe-area-inset-top) + 8px);left:16px;
+    background:#0006;border:none;color:#fff;font-size:18px;width:36px;height:36px;border-radius:50%}
+  .predTitle{font-size:15px;font-weight:700;letter-spacing:.04em;color:#C9BCF2;margin-top:30px}
+  .predYearBig{font-family:'IBM Plex Mono',monospace;font-size:44px;font-weight:800;margin-top:8px;direction:ltr;text-shadow:0 0 28px rgba(139,111,232,.75),0 0 8px rgba(255,255,255,.3);letter-spacing:.01em}
+  .predYearSub{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:700;color:#DCD6EA;margin-top:4px;direction:ltr}
+  .encyIntro{max-width:340px;margin-top:26px;font-size:13px;font-weight:700;color:#B9E3D6}
+  .predCredit{font-size:11px;color:#B9BFCB;line-height:1.7;max-width:300px;margin:12px auto 20px}
+  .predCard{
+    max-width:340px;background:rgba(10,14,20,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+    border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:18px 20px;color:#F2F0F7;text-align:right}
+  .predRow{padding:10px 0;border-top:1px solid rgba(255,255,255,.1)}
+  .predRow:first-child{border-top:none;padding-top:2px}
+  .predRow b{display:block;font-family:'Heebo';font-size:11.5px;font-weight:800;letter-spacing:.05em;color:#C9BCF2;margin-bottom:4px}
+  .predRow span{display:block;font-size:14.5px;font-weight:500;line-height:1.75;color:#FFFFFF}
+  .predActs{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap;justify-content:center}
+  .predActs button{
+    font-family:'Heebo';font-size:12.5px;font-weight:700;color:#fff;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:10px 16px}
+  .predNav{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+  .predNav button{
+    font-family:'Heebo';font-size:11.5px;font-weight:700;color:#B9C5E0;
+    background:none;border:1px solid rgba(255,255,255,.16);border-radius:99px;padding:8px 14px}
+  .predFloat{animation:predFloat 4s ease-in-out infinite}
+  @keyframes predFloat{0%,100%{opacity:.35}50%{opacity:.9}}
+
+  /* ---------- קפיצת זמן ---------- */
+  .jumpLaunch{
+    margin-top:2px;font-family:'Heebo';font-size:12.5px;font-weight:800;color:#fff;
+    background:linear-gradient(160deg,#8B6FE8,#4A2FA0);border:none;border-radius:99px;
+    padding:8px 20px;box-shadow:0 4px 16px rgba(107,63,216,.35)}
+  .jumpLaunch.justUnlocked{animation:jumpPop .6s ease-out}
+  @keyframes jumpPop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+  .jumpHint{
+    margin-top:2px;font-family:'Heebo';font-size:11px;color:#5A6572;
+    max-width:260px;text-align:center;line-height:1.4}
+  .jumpHint .llBar{display:block;max-width:180px;margin:4px auto 0}
+  #jumpModal{
+    position:fixed;inset:0;z-index:63;display:none;place-items:center;
+    background:rgba(10,14,20,.75);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:20px}
+  #jumpModal.open{display:grid}
+  .jmBox{
+    width:100%;max-width:360px;background:#fff;border-radius:20px;padding:22px;
+    display:flex;flex-direction:column;gap:12px}
+  .jmBox h3{font-size:17px;font-weight:800;color:#1B2430}
+  .jmBox p{font-size:12.5px;color:#5A6572;line-height:1.6}
+  .jmLbl{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:#5A6572;font-weight:600}
+  .jmLbl input{
+    font-family:'Heebo';font-size:14px;padding:11px;border-radius:12px;border:1px solid #D4DAE0;
+    background:#F7F8FA;color:#1B2430}
+  .jmErr{font-size:12px;color:#C0392B;min-height:16px}
+  #jumpFlash{
+    position:fixed;inset:0;z-index:90;background:#fff;opacity:0;pointer-events:none}
+  #jumpFlash.on{opacity:1;transition:none}
+  #jumpFlash.fade{opacity:0;transition:opacity .9s ease-out}
+  #clockEl.scrambling{color:#8B6FE8 !important}
+
+  /* ---------- מבזק מהעתיד: כותרות אמיתיות מהאנציקלופדיה, ברגע הנחיתה ---------- */
+  #newsFlash{
+    position:fixed;inset:0;z-index:85;display:none;place-items:center;
+    background:rgba(6,9,14,.88);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+    padding:24px;cursor:pointer}
+  #newsFlash.open{display:grid}
+  .newsFlashInner{max-width:320px;text-align:center;color:#fff}
+  .newsFlashTag{font-size:11.5px;font-weight:800;letter-spacing:.08em;color:#8FD6C9;margin-bottom:18px}
+  .newsFlashIcon{width:64px;height:64px;margin:0 auto 14px;animation:newsFlashIn .35s ease-out}
+  .newsFlashTitle{font-family:'Frank Ruhl Libre',serif;font-size:17px;font-weight:700;margin-bottom:10px;animation:newsFlashIn .35s ease-out}
+  .newsFlashText{font-size:14px;line-height:1.7;color:#E5E8ED;animation:newsFlashIn .35s ease-out .05s both}
+  .newsFlashHint{margin-top:22px;font-size:11px;color:#8B95A0}
+  @keyframes newsFlashIn{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:translateY(0)}}
+
+  /* ---------- טלסקופ העתיד: פתיחת המסע — בחירת יעד קפיצה בגילוי ---------- */
+  #telescopeScreen{
+    position:fixed;inset:0;z-index:82;display:none;overflow:hidden;
+    background:radial-gradient(ellipse at 50% 30%,#1a2340,#05070f 75%)}
+  #telescopeScreen.open{display:block}
+  .telescopeSky{position:absolute;inset:0;overflow:hidden}
+  .telescopeVignette{
+    position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(circle at 50% 45%,transparent 38%,rgba(0,0,0,.55) 68%,rgba(0,0,0,.92) 100%)}
+  .telescopeHeader{
+    position:absolute;top:calc(env(safe-area-inset-top) + 26px);left:0;right:0;text-align:center;color:#fff;z-index:30;pointer-events:none}
+  .telescopeTitle{font-family:'Frank Ruhl Libre',serif;font-size:21px;font-weight:700;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+  .telescopeSub{margin-top:6px;font-size:12.5px;color:#B9C5E0}
+  .telescopeFoot{
+    position:absolute;bottom:calc(env(safe-area-inset-bottom) + 24px);left:0;right:0;
+    display:flex;flex-direction:column;align-items:center;gap:10px;z-index:2}
+  .telescopeManual{
+    font-family:'Heebo';font-size:12px;color:#B9C5E0;background:none;border:none;
+    border-bottom:1px dotted #7A87A8;padding:2px}
+  .telescopeSkip{
+    font-family:'Heebo';font-size:12.5px;font-weight:700;color:#fff;
+    background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:99px;padding:9px 20px}
+  .telescopeTag{
+    position:absolute;width:118px;
+    display:flex;flex-direction:column;align-items:center;
+    cursor:pointer;touch-action:pinch-zoom;
+    animation-name:tagFloat,tagTwinkle;
+    animation-timing-function:ease-in-out,ease-in-out;
+    animation-iteration-count:infinite,infinite}
+  .telescopeCloudShape{
+    width:112px;height:74px;
+    background:#1D2740;border:1.5px solid rgba(180,205,255,.35);
+    filter:drop-shadow(0 0 10px rgba(120,160,255,.25))}
+  .telescopeTag.mystery .telescopeCloudShape{
+    background:#2A1F42;border-color:rgba(215,170,255,.4);filter:drop-shadow(0 0 12px rgba(180,110,255,.3))}
+  .telescopeTagText{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);text-align:center;font-family:'IBM Plex Mono',monospace;padding:0 8px}
+  .telescopeTagText b{display:block;font-size:18px;font-weight:800;color:#fff;text-shadow:0 0 10px rgba(140,180,255,.8),0 1px 4px rgba(0,0,0,.7);direction:ltr}
+  .telescopeTagText span{display:block;font-size:7.5px;line-height:1.25;color:#EEF1F8;margin-top:1px}
+  .telescopeTag.mystery .telescopeTagText b{color:#F7ECFF;text-shadow:0 0 12px rgba(200,140,255,.85),0 1px 4px rgba(0,0,0,.7)}
+  @keyframes tagFloat{
+    0%{transform:translate(-50%,-50%)}
+    50%{transform:translate(calc(-50% + var(--dx,10px)),calc(-50% + var(--dy,8px)))}
+    100%{transform:translate(-50%,-50%)}
+  }
+  @keyframes tagTwinkle{0%,100%{opacity:.72}50%{opacity:1}}
+
+  #telescopeConfirm{
+    position:fixed;inset:0;z-index:83;display:none;place-items:center;
+    background:rgba(5,7,15,.7);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);padding:20px}
+  #telescopeConfirm.open{display:grid}
+  .tcBox{
+    width:100%;max-width:320px;background:#151a2c;border:1px solid rgba(255,255,255,.14);border-radius:20px;
+    padding:26px 24px;text-align:center;color:#fff}
+  .tcYear{font-family:'IBM Plex Mono',monospace;font-size:32px;font-weight:800;direction:ltr;color:#9FC0FF;text-shadow:0 0 20px rgba(120,160,255,.5)}
+  .tcTeaser{margin-top:12px;font-size:14px;line-height:1.7;color:#DCE3F2}
+  .tcActs{display:flex;flex-direction:column;gap:9px;margin-top:20px}
+  .tcActs button{font-family:'Heebo';font-size:13.5px;font-weight:700;padding:11px;border-radius:99px;border:none}
+  #tcGo{background:linear-gradient(160deg,#5A9BE0,#1E4272);color:#fff}
+  #tcCancel{background:rgba(255,255,255,.1);color:#DCE3F2}
+</style>
+</head>
+<body>
+<div id="bootScreen">
+  <div class="bootInner" id="bootInner">
+    <div class="bootTitle">⏱ משחקי זמן</div>
+    <div class="bootQuoteEn">sometimes I just wanna<br>spin the hands of time forward</div>
+    <div class="bootAnonym">anonym</div>
+    <div class="bootSub">הקש כדי להתחיל</div>
+  </div>
+</div>
+<script>
+(function(){
+  var boot=document.getElementById('bootScreen');
+  var inner=document.getElementById('bootInner');
+  var started=false;
+  var pad=function(n){ return String(n).padStart(2,'0'); };
+  function playBootSound(){
+    try{
+      var AC=new (window.AudioContext||window.webkitAudioContext)();
+      var now=AC.currentTime;
+      var o=AC.createOscillator(), g=AC.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(180,now); o.frequency.exponentialRampToValueAtTime(880,now+0.9);
+      g.gain.setValueAtTime(0.0001,now);
+      g.gain.exponentialRampToValueAtTime(0.12,now+0.15);
+      g.gain.exponentialRampToValueAtTime(0.0001,now+1.0);
+      o.connect(g); g.connect(AC.destination);
+      o.start(now); o.stop(now+1.05);
+      var c=AC.createOscillator(), cg=AC.createGain();
+      c.type='square'; c.frequency.value=1200;
+      cg.gain.setValueAtTime(0.0001, now+1.0);
+      cg.gain.exponentialRampToValueAtTime(0.08, now+1.02);
+      cg.gain.exponentialRampToValueAtTime(0.0001, now+1.08);
+      c.connect(cg); cg.connect(AC.destination);
+      c.start(now+1.0); c.stop(now+1.1);
+      setTimeout(function(){ try{ AC.close(); }catch(e){} },1300);
+    }catch(e){}
+  }
+  function runBoot(){
+    if(started) return; started=true;
+    if(window.unlockAudio) window.unlockAudio();
+    playBootSound();
+    inner.innerHTML =
+      '<div class="bootTitle">⏱ משחקי זמן</div>'+
+      '<div class="bootSub" id="bootSub2">מתחבר לעולם…</div>'+
+      '<div class="bootDigits" id="bootDigits">--:--</div>';
+    var digitsEl=document.getElementById('bootDigits'), subEl=document.getElementById('bootSub2');
+    var stepStart=performance.now();
+    function scrambleStep(){
+      var t=performance.now()-stepStart;
+      if(t<1000){
+        digitsEl.textContent=pad(Math.floor(Math.random()*24))+':'+pad(Math.floor(Math.random()*60));
+        requestAnimationFrame(scrambleStep);
+      }else if(t<1500){
+        subEl.textContent='מכייל את הזמן שלך…';
+        var d=new Date();
+        digitsEl.textContent=pad(d.getHours())+':'+pad(d.getMinutes());
+        requestAnimationFrame(scrambleStep);
+      }else{
+        subEl.textContent='מוכן.';
+        setTimeout(function(){
+          if(window.startTelescope) window.startTelescope(true);
+          boot.classList.add('fading');
+          setTimeout(function(){
+            boot.classList.add('hidden');
+          },850);
+        },350);
+      }
+    }
+    requestAnimationFrame(scrambleStep);
+  }
+  boot.addEventListener('click',runBoot);
+  boot.addEventListener('touchstart',runBoot,{passive:true});
+  boot.addEventListener('pointerdown',runBoot);
+})();
+</script>
+<canvas id="stream"></canvas>
+
+<header>
+  <div class="brand">משחקי זמן <small>אב־טיפוס</small></div>
+  <div class="hRight">
+    <div class="soundWrap">
+      <button class="soundBtn on" id="soundBtn" aria-label="קול">🔊</button>
+      <div class="soundHint" id="soundHint">↓</div>
+    </div>
+    <button class="closeBtn" id="closeBtn" aria-label="סגירה" title="סגירת האפליקציה">✕</button>
+    <canvas id="worldFace" width="160" height="160"></canvas>
+  </div>
+</header>
+
+<main>
+  <div class="mainTitle">משחקי זמן</div>
+  <div class="worldLine">שעון העולם&nbsp;<span id="wHm">--:--</span><span id="wSs" class="wsec">--</span></div>
+  <div class="clockTag">הזמן שלך</div>
+  <div class="clock" id="clockEl"><span id="hm">--:--</span><span class="sec" id="ss">--</span></div>
+  <div class="clockDate" id="clockDate"></div>
+  <div class="gap" id="gap">±00:00</div>
+  <div class="gap-label">המרחק שלך מהעולם — <span id="gapWhen">כרגע אין מרחק</span> · <u id="syncBtn">התיישר עם העולם</u></div>
+  <div class="state" id="stateLine">הזמן שלך זורם עם העולם</div>
+  <div class="letterLaunch" id="letterLaunch" style="display:none">
+    <div class="llRow" id="llRow">
+      <button class="llOpt" id="llLetterBtn">✉️ איגרת</button>
+      <span class="llSlash">/</span>
+      <button class="llOpt" id="llVoiceBtn">🎙️ הודעה קולית</button>
+    </div>
+    <span id="llLabel">עוד רגע תוכל לשלוח: ✉️ / 🎙️</span>
+    <i class="llBar" id="llBar"><b id="llBarFill"></b></i>
+  </div>
+  <button class="predLaunch" id="predLaunch" style="display:none">🌍 השנה <span id="predYearBtn"></span>. מה קורה כאן?</button>
+  <div class="jumpHint" id="jumpHint" style="display:none">
+    🔒 קפיצת זמן נפתחת אחרי כ-3 דקות רצופות בזירוז/דילוג
+    <i class="llBar" id="jumpBar"><b id="jumpBarFill"></b></i>
+  </div>
+  <button class="jumpLaunch" id="jumpLaunch" style="display:none">⚡ קפיצת זמן</button>
+</main>
+
+<div id="jumpModal">
+  <div class="jmBox">
+    <h3>⚡ קפיצת זמן</h3>
+    <p>קפיצה ישירה למועד עתידי — עד 100 שנה קדימה. אי אפשר לקפוץ אחורה מהרגע שאתה בו עכשיו.</p>
+    <label class="jmLbl">תאריך היעד<input id="jmDate" type="date"></label>
+    <label class="jmLbl">שעה (רשות)<input id="jmTime" type="time" value="12:00"></label>
+    <div class="jmErr" id="jmErr"></div>
+    <div class="lmActs">
+      <button class="cancel" id="jmCancel">ביטול</button>
+      <button class="create" id="jmGo">קפוץ</button>
+    </div>
+  </div>
+</div>
+
+<div id="jumpFlash"></div>
+
+<div id="predictionScreen">
+  <div class="predBg" id="predBg"></div>
+  <video id="predVideo" autoplay playsinline muted></video>
+  <div class="predContent">
+    <button class="predClose" id="predClose">✕</button>
+    <div class="predTitle">🌍 מה קורה כאן?</div>
+    <div class="predYearBig" id="predYearBig"></div>
+    <div class="predYearSub" id="predYearSub"></div>
+    <div class="predCredit">תוכן ספקולטיבי שהוכן על ידי קלוד</div>
+    <div class="predCard" id="predCard"></div>
+    <div class="predActs">
+      <button id="predToLetter">✍️ כתוב איגרת מן העתיד</button>
+      <button id="predToCam">🤳 צור סלפי מהעתיד</button>
+    </div>
+    <div class="encyIntro" id="encyIntro" style="display:none">רוצה להעמיק? גע/י במקש המתאים</div>
+    <div class="encyGrid" id="encyGrid" style="display:none"></div>
+    <div class="predNav">
+      <button id="predFlyElsewhere">⚡ טוס לשנה אחרת</button>
+      <button id="predBackToNow">🕐 חזרה להווה</button>
+    </div>
+  </div>
+</div>
+
+<div id="topicPicker">
+  <div class="topicPickerBg"></div>
+  <div class="topicPickerContent">
+    <button class="encyClose" id="topicPickerClose">✕</button>
+    <div class="topicPickerTitle">שלב תכנים ממה שמתרחש כאן</div>
+    <div class="encyGrid" id="topicPickerGrid" style="display:grid"></div>
+  </div>
+</div>
+
+<div id="encyDetail">
+  <div class="encyDetailBg" id="encyDetailBg"></div>
+  <div class="encyDetailContent">
+    <button class="encyClose" id="encyDetailClose">✕</button>
+    <div class="encyDetailIcon" id="encyDetailIcon"></div>
+    <div class="encyDetailTitle" id="encyDetailTitle"></div>
+    <div class="encyDetailYear" id="encyDetailYear"></div>
+    <div class="encyDetailBody" id="encyDetailBody"></div>
+    <button class="encyBack" id="encyBack">⟵ חזרה</button>
+  </div>
+</div>
+
+<div class="scrollHint" id="scrollHint">⌄ עוד אפשרויות למטה</div>
+
+<div id="newsFlash">
+  <div class="newsFlashInner">
+    <div class="newsFlashTag">📰 מבזק מהעתיד</div>
+    <div class="newsFlashIcon" id="newsFlashIcon"></div>
+    <div class="newsFlashTitle" id="newsFlashTitle"></div>
+    <div class="newsFlashText" id="newsFlashText"></div>
+    <div class="newsFlashHint">גע כדי לדלג</div>
+  </div>
+</div>
+
+<div id="telescopeScreen">
+  <div class="telescopeSky" id="telescopeSky"></div>
+  <div class="telescopeVignette"></div>
+  <div class="telescopeHeader">
+    <div class="telescopeTitle">בחר שנה בעתיד וקפוץ אליה</div>
+  </div>
+  <div class="telescopeFoot">
+    <button class="telescopeManual" id="telescopeManual">בחירת תאריך ידנית</button>
+    <button class="telescopeSkip" id="telescopeSkip">🕐 המשך בזמן רגיל</button>
+  </div>
+</div>
+
+<div id="telescopeConfirm">
+  <div class="tcBox">
+    <div class="tcYear" id="tcYear"></div>
+    <div class="tcTeaser" id="tcTeaser"></div>
+    <div class="tcActs">
+      <button id="tcGo">🚀 צא למסע</button>
+      <button id="tcCancel">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <button class="camLaunch" id="openCam">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+    עדשת הזמן — להביט בעולם בזמן שלך
+  </button>
+  <div class="dial" id="mainDial">
+    <button class="bNorm on"><b>זמן רגיל</b><i>לזרום עם העולם</i></button>
+    <button class="bFast"><b>זירוז זמן</b><i>פי 10 — לברוח לעתיד</i></button>
+    <button class="bUltra"><b>דילוג זמן</b><i>פי 100 — לקפוץ אל העתיד</i></button>
+  </div>
+  <div class="budget" id="budgetBox">
+    <span>מכסה יומית לשינויי זמן</span>
+    <div class="bar"><i id="budgetBar"></i></div>
+    <span id="budgetTxt">2:00:00</span>
+  </div>
+</footer>
+
+<div id="camView">
+  <canvas id="camCanvas"></canvas>
+  <div class="camTop">
+    <button class="camClose" id="closeCam">✕</button>
+    <div style="text-align:center">
+      <div class="t" id="camClock">--:--:--</div>
+      <div class="g" id="camGap">±00:00</div>
+    </div>
+    <div class="futureCounter" id="futureCounter">
+      <span class="fcLabel">מונה עתיד</span>
+      <span class="fcNum" id="fcNum">000000</span>
+    </div>
+  </div>
+  <div class="lensCaption" id="lensCaption"></div>
+  <div class="recTime" id="recTime">● 0:00</div>
+  <div class="camMsg" id="camMsg"></div>
+  <div class="camBottom">
+    <div class="camDial" id="camDial">
+      <button class="bNorm on">זמן רגיל</button>
+      <button class="bFast">זירוז</button>
+      <button class="bUltra">דילוג</button>
+    </div>
+    <button class="camSync" id="camSync">התיישרות עם העולם — חזרה להווה</button>
+    <div class="camHint">📸 הקשה קלה על העיגול הלבן = תמונה &nbsp;·&nbsp; החזקה = חשיפת 5 שניות &nbsp;·&nbsp; 🔴 = הקלטת וידאו (הקשה נוספת לעצירה ולשמירה)</div>
+    <div class="camRow">
+      <button class="flipBtn" id="flipCam">⟲</button>
+      <div class="camBtnCol"><button class="shutter" id="snap" aria-label="צילום"></button><small>תמונה</small></div>
+      <div class="camBtnCol"><button class="recBtn" id="rec" aria-label="וידאו"><i></i></button><small>וידאו</small></div>
+      <button class="zoomBtn" id="zoomBtn">1x</button>
+    </div>
+  </div>
+</div>
+
+<div id="shot">
+  <img id="shotImg" style="display:none" alt="">
+  <video id="shotVid" style="display:none" playsinline controls></video>
+  <div class="acts">
+    <button class="primary" id="shareShot">שיתוף</button>
+    <a id="saveShot" download>שמירה</a>
+    <button id="closeShot">סגירה</button>
+  </div>
+  <button id="makePostcard" style="display:none">🤳 צור סלפי מהעתיד</button>
+  <div class="hint">התוצר נחתם בזמן שלך ובפער מהעולם</div>
+</div>
+
+<div id="closeOverlay">
+  <div>
+    <h3>עד המסע הבא 🕰</h3>
+    <p>הדפדפן לא תמיד מאפשר לאפליקציה לסגור את עצמה. אפשר פשוט לסגור את הלשונית עכשיו — או לחזור למסע.</p>
+    <button id="closeBack">חזרה למכונה</button>
+  </div>
+</div>
+
+<video id="camVideo" playsinline muted autoplay style="display:none"></video>
+
+<!-- ===== איגרת מן העתיד ===== -->
+<div id="letterModal">
+  <div class="lmBox">
+    <h3>✉️ איגרת מן העתיד</h3>
+    <p>אתה כותב מתוך המרחק שלך — היא תגיע מיד, אבל תישא את חותמת הזמן שממנה נכתבה.</p>
+    <div class="lmBgPreview" id="lmBgPreview" style="display:none">
+      <div class="lmBgPreviewIcon" id="lmBgPreviewIcon"></div>
+      <div class="lmBgPreviewText" id="lmBgPreviewText"></div>
+    </div>
+    <div class="lmAiImg" id="lmAiImg" style="display:none">
+      <button id="lmGenImg" type="button">🎨 הוסף תמונה שנוצרה מהתחום (AI)</button>
+      <div class="lmAiImgStatus" id="lmAiImgStatus"></div>
+      <div class="lmAiImgPreview" id="lmAiImgPreview" style="display:none">
+        <img id="lmAiImgEl" alt="">
+        <label><input type="checkbox" id="lmAiImgChk" checked> כלול בכרטיס</label>
+      </div>
+    </div>
+    <input id="lmFrom" type="text" placeholder="מאת (רשות) — השם שלך">
+    <input id="lmTo" type="text" placeholder="אל (רשות) — למשל: לעצמי, לדנה">
+    <textarea id="lmText" placeholder="מה ברצונך לומר מהעתיד?"></textarea>
+    <div class="lmAttach" id="lmAttach">
+      <div class="lmAttachEmpty" id="lmAttachEmpty">📎 עוד לא צילמת דרך העדשה במסע הזה — פתח את עדשת הזמן, צלם, וחזור לכאן כדי לצרף</div>
+      <div class="lmAttachGot" id="lmAttachGot" style="display:none">
+        <div class="lmGalleryHead"><b>יש לך תמונות מהעתיד</b><label class="lmAttachToggle"><input type="checkbox" id="lmAttachChk" checked> צרף</label></div>
+        <div class="lmGallery" id="lmGallery"></div>
+      </div>
+    </div>
+    <div class="lmAttach" id="lmVoiceAttach">
+      <div class="lmAttachEmpty" id="lmVoiceEmpty">🎙️ עוד לא הקלטת הודעה קולית במסע הזה — הקלט אחת וחזור לכאן כדי לצרף</div>
+      <div class="lmAttachGot" id="lmVoiceGot" style="display:none">
+        <div class="lmGalleryHead"><b>יש לך הודעות קוליות</b><label class="lmAttachToggle"><input type="checkbox" id="lmVoiceChk" checked> צרף</label></div>
+        <div class="lmGallery" id="lmVoiceGallery"></div>
+      </div>
+    </div>
+    <div class="lmActs">
+      <button class="cancel" id="lmCancel">ביטול</button>
+      <button class="create" id="lmCreate">צור איגרת</button>
+    </div>
+  </div>
+</div>
+
+<div id="letterSendModal">
+  <div class="lsBox">
+    <div class="lsPreviewWrap"><img id="lsPreview" alt="האיגרת שלך"></div>
+    <button class="lsMain" id="lsShare">📤 לשגר את האיגרת</button>
+    <div class="lsChannels">
+      <button class="lsCh lsWa" id="lsWa"><span>💬</span>וואטסאפ</button>
+      <button class="lsCh lsGm" id="lsGm"><span>✉️</span>ג'ימייל</button>
+      <button class="lsCh lsSm" id="lsSm"><span>💌</span>הודעה</button>
+    </div>
+    <div class="lsHint">בחירה בכל ערוץ פותחת את תפריט השיתוף של הטלפון — האיגרת מוכנה שם לצירוף</div>
+    <a class="lsSave" id="lsSave" download>⬇️ שמירה בגלריה בלבד</a>
+    <button class="lsClose" id="lsClose">✓ סיימתי — חזרה למכונה</button>
+  </div>
+</div>
+
+<div id="voiceModal">
+  <div class="vmBox">
+    <h3>🎙️ הודעה קולית מן העתיד</h3>
+    <p>הקול שלך יעבור עיבוד קל — כאילו הגיע ממרחק, לא הקלטה נקייה. גע כדי להקליט, גע שוב כדי לעצור.</p>
+    <button class="vmRecBtn" id="vmRecBtn">🎙️</button>
+    <div class="vmTimer" id="vmTimer">00:00</div>
+    <div class="vmHint" id="vmHint">גע כדי להתחיל להקליט</div>
+    <div class="vmPreviewWrap" id="vmPreviewWrap">
+      <audio id="vmAudio" controls></audio>
+      <div class="vmPreviewActs">
+        <button id="vmReRecord">🔁 הקלטה מחדש</button>
+        <button id="vmSend">המשך לשליחה</button>
+      </div>
+    </div>
+    <button id="vmCancel">ביטול</button>
+  </div>
+</div>
+
+<div id="voiceSendModal">
+  <div class="vsBox">
+    <audio id="vsAudio" controls></audio>
+    <button class="lsMain" id="vsShare">📤 לשגר את ההודעה</button>
+    <div class="lsChannels">
+      <button class="lsCh lsWa" id="vsWa"><span>💬</span>וואטסאפ</button>
+      <button class="lsCh lsGm" id="vsGm"><span>✉️</span>ג'ימייל</button>
+      <button class="lsCh lsSm" id="vsSm"><span>💌</span>הודעה</button>
+    </div>
+    <div class="lsHint">בחירה בכל ערוץ פותחת את תפריט השיתוף — משפט פתיחה ("יש לך הודעה מהעתיד") יצורף אוטומטית</div>
+    <a class="lsSave" id="vsSave" download>⬇️ שמירה בלבד</a>
+    <button class="lsClose" id="vsClose">✓ סיימתי — חזרה למכונה</button>
+  </div>
+</div>
+
+
+<div id="letterCard">
+  <div class="lcOrnament">
+    <svg viewBox="0 0 120 120">
+      <defs>
+        <radialGradient id="lcBgG" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#FBF2DA"/><stop offset="1" stop-color="#EDE0BC"/></radialGradient>
+        <linearGradient id="lcGoldG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F0CD82"/><stop offset="1" stop-color="#A5762B"/></linearGradient>
+      </defs>
+      <circle cx="60" cy="60" r="52" fill="url(#lcBgG)" stroke="url(#lcGoldG)" stroke-width="2.5"/>
+      <g stroke="url(#lcGoldG)" fill="none" stroke-linecap="round">
+        <path d="M 60 20 A 40 40 0 0 1 98 55" stroke-width="4"/>
+        <path d="M 92 84 A 30 30 0 0 1 40 84" stroke-width="3.5" opacity=".75"/>
+        <path d="M 34 44 A 22 22 0 0 1 74 50" stroke-width="3" opacity=".6"/>
+      </g>
+      <circle cx="60" cy="60" r="14" fill="url(#lcGoldG)" opacity=".3"/>
+      <circle cx="60" cy="60" r="4" fill="#7A5A1E"/>
+      <line x1="60" y1="60" x2="60" y2="34" stroke="#7A5A1E" stroke-width="3" stroke-linecap="round"/>
+      <line x1="60" y1="60" x2="78" y2="68" stroke="#7A5A1E" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="lcTitle">איגרת מן העתיד</div>
+  <div class="lcWhen">
+    <div class="lcRow"><span class="lcRowKey">מאת</span><b id="lcFromName">אני</b><span class="lcRowWorld">מועד המשלוח</span><b id="lcFutureStamp"></b></div>
+    <div class="lcRow"><span class="lcRowKey">אל</span><b id="lcToName">העתיד שלי</b><span class="lcRowWorld">מועד קבלת המכתב</span><b id="lcRealStamp"></b></div>
+  </div>
+  <div class="lcSeal" id="lcSeal">תיעוד עתידי <b id="lcSealNum"></b></div>
+  <div class="lcPhoto" id="lcPhoto" style="display:none"><img id="lcPhotoImg"></div>
+  <div class="lcBackground" id="lcBackground" style="display:none">
+    <div class="lcBgIcon" id="lcBgIcon"></div>
+    <div class="lcBgText" id="lcBgText"></div>
+  </div>
+  <div class="lcTopicImg" id="lcTopicImg" style="display:none"><img id="lcTopicImgEl" alt=""></div>
+  <div class="lcBody" id="lcBody"></div>
+  <div class="lcFoot">
+    <div class="lcFootLine"></div>
+    <div class="lcFootBrand">משחקי זמן</div>
+    <div class="lcFootTag">כלי אישי למסע בזמן</div>
+  </div>
+</div>
+
+<div id="postcardCard">
+  <div class="pcBg" id="pcBg"></div>
+  <div class="pcContent">
+    <div class="pcTitle">🤳 סלפי מהעתיד</div>
+    <div class="pcPhotoFrame" id="pcPhotoFrame"></div>
+    <div class="pcDateTag" id="pcDateTag"></div>
+    <div class="pcDistance" id="pcDistance"></div>
+    <div class="pcCaption" id="pcCaption"></div>
+    <div class="pcSeal" id="pcSeal"></div>
+    <div class="pcFoot">
+      <div class="pcFootLine"></div>
+      <div class="pcFootBrand">משחקי זמן</div>
+    </div>
+  </div>
+</div>
+
+<div id="postcardSendModal">
+  <div class="lsBox">
+    <div class="lsPreviewWrap"><img id="pcSendPreview" alt="גלויית הסלפי שלך"></div>
+    <button class="lsMain" id="pcShare">📤 לשתף את הגלויה</button>
+    <div class="lsChannels">
+      <button class="lsCh lsWa" id="pcWa"><span>💬</span>וואטסאפ</button>
+      <button class="lsCh lsGm" id="pcGm"><span>✉️</span>ג'ימייל</button>
+      <button class="lsCh lsSm" id="pcSm"><span>💌</span>הודעה</button>
+    </div>
+    <div class="lsHint">בחירה בכל ערוץ פותחת את תפריט השיתוף של הטלפון — הגלויה מוכנה שם לצירוף</div>
+    <a class="lsSave" id="pcSave" download>⬇️ שמירה בגלריה בלבד</a>
+    <button class="lsClose" id="pcClose">✓ סיימתי — חזרה למכונה</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+(() => {
+  const FAST = 10, ULTRA = 100;
+  let targetRate = 1, rate = 1, mode = 'norm';
+  let myMs = Date.now(), last = performance.now(), budget = 2*3600;
+  let driftStart = null, intensity = 0, intensityTarget = 0, jumpPalette = null, driftBoostSec = 0;
+  function intensityCurve(sec){
+    if(sec<60) return lerp(0, 0.15, sec/60);
+    if(sec<180) return lerp(0.15, 1, (sec-60)/120);
+    return 1;
+  }
+
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2,'0');
+  const lerp = (a,b,t)=>a+(b-a)*t;
+  const clamp01 = v=>Math.max(0,Math.min(1,v));
+
+  const fmtHMS = ms => { const d=new Date(ms); return {hm:pad(d.getHours())+':'+pad(d.getMinutes()), s:pad(d.getSeconds())}; };
+  const fmtFull = ms => { const d=new Date(ms); return pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()); };
+  const fmtDateTime = ms => { const d=new Date(ms); return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear()+'  '+pad(d.getHours())+':'+pad(d.getMinutes()); };
+  function fmtGap(sec){
+    const a=Math.abs(sec), sign = sec>0.5?'−':sec<-0.5?'+':'±';
+    // פערים גדולים (אחרי קפיצת זמן) מוצגים בימים — לא בשנים מעוגלות שנעות רק פעם בכמה שעות ונראות "קפואות"
+    if(a>=473040000){ const y=a/31536000; return sign+(Math.round(y*10)/10)+' שנים'; } // רק מעל ~15 שנה, כדי לא לאבד תחושת תנועה
+    if(a>=86400){ const d=Math.floor(a/86400), h=Math.floor(a%86400/3600); return sign+d+'י׳ '+pad(h)+':'+pad(Math.floor(a%3600/60)); }
+    const h=Math.floor(a/3600),m=Math.floor(a%3600/60),s=Math.floor(a%60);
+    return sign+(h?h+':'+pad(m)+':'+pad(s):pad(m)+':'+pad(s));
+  }
+  function fmtDur(sec){
+    sec=Math.max(0,Math.round(sec));
+    const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;
+    return h?h+':'+pad(m)+':'+pad(s):m+':'+pad(s);
+  }
+  const fmtBudget = sec => { sec=Math.max(0,Math.ceil(sec)); return Math.floor(sec/3600)+':'+pad(Math.floor(sec%3600/60))+':'+pad(sec%60); };
+  function fmtWhen(sec){
+    const a=Math.round(Math.abs(sec));
+    const sign = sec>0.5?'−':sec<-0.5?'+':'±';
+    if(a<45) return 'ממש עכשיו';
+    const d=Math.floor(a/86400), h=Math.floor(a%86400/3600), m=Math.floor(a%3600/60);
+    if(d>0) return sign+' '+d+(d===1?' יום':' ימים')+(h>0?' ו-'+h+(h===1?' שעה':' שעות'):'');
+    if(h>0) return sign+' '+h+(h===1?' שעה':' שעות')+(m>0?' ו-'+m+(m===1?' דקה':' דקות'):'');
+    return sign+' '+(m||1)+((m||1)===1?' דקה':' דקות');
+  }
+  const rateT=()=> rate<=1 ? 0.5 : clamp01(0.5 + 0.5*Math.log(rate)/Math.log(ULTRA));
+
+  /* ================= קול ================= */
+  let AC=null, soundOn=true, droneOsc=null, droneOsc2=null, droneGain=null, droneFilter=null, tickSide=false;
+  let recDest=null, micGainNode=null;
+  function ensureAudio(){
+    if(AC) return;
+    AC = new (window.AudioContext||window.webkitAudioContext)();
+    recDest = AC.createMediaStreamDestination();
+    droneGain = AC.createGain(); droneGain.gain.value = 0;
+    droneFilter = AC.createBiquadFilter(); droneFilter.type='lowpass'; droneFilter.frequency.value=600;
+    droneOsc = AC.createOscillator(); droneOsc.type='triangle';
+    droneOsc2 = AC.createOscillator(); droneOsc2.type='sine';
+    droneOsc.connect(droneFilter); droneOsc2.connect(droneFilter);
+    droneFilter.connect(droneGain);
+    droneGain.connect(AC.destination);
+    droneOsc.start(); droneOsc2.start();
+  }
+  window.unlockAudio=function(){
+    ensureAudio();
+    if(AC && AC.state==='suspended'){ AC.resume(); }
+  };
+  function playTick(){
+    if(!soundOn||!AC) return;
+    const t=rateT(), now=AC.currentTime;
+    const osc=AC.createOscillator(), g=AC.createGain(), f=AC.createBiquadFilter();
+    tickSide=!tickSide;
+    const base = lerp(170, 1250, t) * (tickSide?1:0.84);
+    osc.type = t<0.5 ? 'triangle' : 'square';
+    osc.frequency.value = base;
+    f.type='lowpass'; f.frequency.value = lerp(900, 4200, t);
+    const dur = lerp(0.34, 0.045, t);
+    g.gain.setValueAtTime(lerp(0.5,0.18,t), now);
+    g.gain.exponentialRampToValueAtTime(0.001, now+dur);
+    osc.connect(f); f.connect(g);
+    g.connect(AC.destination);
+    osc.start(now); osc.stop(now+dur+0.02);
+  }
+  function updateDrone(){
+    if(!AC||!droneGain) return;
+    const t=rateT();
+    const off = Math.abs(t-0.5)*2;
+    // בעבר: זרם מתמשך ורך שמתחזק עם ההתעצמות. בעתיד: קו דק בין הבזקים.
+    const level = (t<0.5 ? off*0.07 : off*0.014) * intensity;
+    droneGain.gain.setTargetAtTime(soundOn ? level : 0, AC.currentTime, 0.8);
+    const f = t<0.5 ? lerp(68,50,(0.5-t)*2) : lerp(120,215,(t-0.5)*2);
+    droneOsc.frequency.setTargetAtTime(f, AC.currentTime, 0.5);
+    droneOsc2.frequency.setTargetAtTime(f*1.505, AC.currentTime, 0.5);
+    droneFilter.frequency.setTargetAtTime(lerp(420,1600,t), AC.currentTime, 0.5);
+  }
+  /* הבזק מידע — בעתיד בלבד, תדירותו וחדותו גדלות עם ההתעצמות */
+  let nextBurstAt=0, lastNotifyAt=0;
+  /* צליל התראה חד — נשמע ברגעי החידוד השיאיים (חיקוי הבזק "מסר הגיע") */
+  function playNotify(){
+    if(!AC||!soundOn) return;
+    const now=AC.currentTime;
+    [1046,1568].forEach((f,i)=>{
+      const o=AC.createOscillator(), g=AC.createGain();
+      o.type='sine'; o.frequency.value=f;
+      const t0=now+i*0.1;
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.exponentialRampToValueAtTime(0.07,t0+0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+0.22);
+      o.connect(g);g.connect(AC.destination);
+      o.start(t0);o.stop(t0+0.25);
+    });
+  }
+  /* "נשלחה תמונה מהעתיד" — הבזק סגלגל קצר על מסך העדשה + צלצול, כדי שהרגע הזה ירגיש כמו שידור, לא רק צילום */
+  function transmissionFX(){
+    ensureAudio();
+    if(AC && AC.state==='suspended') AC.resume();
+    playNotify();
+    const fl=$('jumpFlash');
+    fl.style.background='#8B6FE8';
+    fl.classList.add('on');
+    requestAnimationFrame(()=>{
+      fl.classList.remove('on'); fl.classList.add('fade');
+      setTimeout(()=>{ fl.classList.remove('fade'); fl.style.background=''; },500);
+    });
+  }
+  /* מילים צפות — הדים של מידע שטרם התגבש, מרחפים על העדשה בעתיד */
+  const FLOAT_WORDS=['עוד לא קרה','טרם נכתב','בקרוב','עוד רגע','לא עדיין','בדרך אליך'];
+  let floatItems=[], nextFloatAt=0, floatClock=0;
+  /* אברציה כרומטית — פיצול אדום/ציאן על גבי ה"עקבה" (trail), נראה בבירור גם בתמונה קפואה */
+  let chromaR=null, chromaC=null;
+  function drawChroma(shiftPx){
+    if(shiftPx<=2.4) return;
+    if(!chromaR){ chromaR=document.createElement('canvas'); chromaC=document.createElement('canvas'); }
+    if(chromaR.width!==trail.width||chromaR.height!==trail.height){
+      chromaR.width=chromaC.width=trail.width; chromaR.height=chromaC.height=trail.height;
+    }
+    const rctx=chromaR.getContext('2d'), cctx2=chromaC.getContext('2d');
+    rctx.globalCompositeOperation='source-over'; rctx.clearRect(0,0,chromaR.width,chromaR.height);
+    rctx.drawImage(trail,0,0);
+    rctx.globalCompositeOperation='multiply'; rctx.fillStyle='#ff2d2d'; rctx.fillRect(0,0,chromaR.width,chromaR.height);
+    cctx2.globalCompositeOperation='source-over'; cctx2.clearRect(0,0,chromaC.width,chromaC.height);
+    cctx2.drawImage(trail,0,0);
+    cctx2.globalCompositeOperation='multiply'; cctx2.fillStyle='#2dd4ff'; cctx2.fillRect(0,0,chromaC.width,chromaC.height);
+    cctx.save();
+    cctx.globalCompositeOperation='screen';
+    cctx.globalAlpha=clamp01(shiftPx/20)*0.6;
+    cctx.drawImage(chromaR, shiftPx, 0);
+    cctx.drawImage(chromaC, -shiftPx, 0);
+    cctx.restore();
+  }
+  function drawFloatWords(dt,inten,r,g,b,distT){
+    floatClock+=dt;
+    if(inten>0.12 && floatClock>nextFloatAt){
+      nextFloatAt=floatClock+lerp(9,2.3,inten)*lerp(1,0.45,distT||0)+Math.random()*1.5;
+      floatItems.push({
+        text:FLOAT_WORDS[Math.floor(Math.random()*FLOAT_WORDS.length)],
+        x:cctx.canvas.width*(0.18+Math.random()*0.64),
+        y:cctx.canvas.height*(0.22+Math.random()*0.5),
+        age:0, life:2.6+Math.random()*1.2
+      });
+    }
+    floatItems = floatItems.filter(it=>{
+      it.age+=dt;
+      const p=it.age/it.life;
+      if(p>=1) return false;
+      const alpha=(p<0.25?p/0.25:p>0.75?(1-p)/0.25:1)*0.5;
+      cctx.save();
+      cctx.font='300 22px Heebo, sans-serif';
+      cctx.textAlign='center';
+      cctx.fillStyle=`rgba(${Math.min(255,r+60)|0},${Math.min(255,g+60)|0},${Math.min(255,b+60)|0},${alpha})`;
+      cctx.fillText(it.text, it.x, it.y - p*14);
+      cctx.restore();
+      return true;
+    });
+  }
+  function playBurst(){
+    if(!AC) return;
+    const now=AC.currentTime;
+    const o=AC.createOscillator(), g=AC.createGain(), f=AC.createBiquadFilter();
+    o.type='square'; o.frequency.value=lerp(900,1500,intensity);
+    f.type='bandpass'; f.frequency.value=1800; f.Q.value=6;
+    g.gain.setValueAtTime(0.0001,now);
+    g.gain.exponentialRampToValueAtTime(lerp(0.03,0.09,intensity),now+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+0.09);
+    o.connect(f);f.connect(g);g.connect(AC.destination);
+    o.start(now);o.stop(now+0.12);
+  }
+  function maybeBurst(nowSec){
+    if((mode!=='fast'&&mode!=='ultra') || !soundOn || intensity<0.05) return;
+    if(nowSec<nextBurstAt) return;
+    // בעצימות גבוהה, לפעמים נשמע אותו צלצול "מסר הגיע" שנשמע גם בעדשה — כדי שהקול לא ירגיש בלעדי למסך המצלמה
+    (intensity>0.55 && Math.random()<0.35) ? playNotify() : playBurst();
+    nextBurstAt = nowSec + lerp(6, 1.1, intensity) + Math.random()*0.6;
+  }
+  /* גליסנדו — נשמע במעבר בין מצבים */
+  function playGlissando(fromMode,toMode){
+    if(!AC) return;
+    const now=AC.currentTime;
+    const o=AC.createOscillator(), g=AC.createGain();
+    o.type='sine';
+    const upward = (toMode==='fast'||toMode==='ultra');
+    const f1=upward?140:520, f2=upward?520:140;
+    o.frequency.setValueAtTime(f1,now);
+    o.frequency.exponentialRampToValueAtTime(f2,now+0.5);
+    g.gain.setValueAtTime(0.0001,now);
+    g.gain.exponentialRampToValueAtTime(soundOn?0.05:0.0001,now+0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+0.55);
+    o.connect(g);g.connect(AC.destination);
+    o.start(now);o.stop(now+0.6);
+  }
+  try{ if(localStorage.getItem('zb_sound_hint_seen')==='1') $('soundHint').classList.add('hidden'); }catch(e){}
+  $('soundBtn').onclick = ()=>{
+    ensureAudio();
+    if(AC.state==='suspended') AC.resume();
+    soundOn=!soundOn;
+    const b=$('soundBtn');
+    b.textContent = soundOn?'🔊':'🔇';
+    b.classList.toggle('on',soundOn);
+    $('soundHint').classList.add('hidden');
+    try{ localStorage.setItem('zb_sound_hint_seen','1'); }catch(e){}
+  };
+
+  /* ----- מצבים ----- */
+  function setMode(m){
+    if(m!=='norm' && budget<=0) return;
+    const prevMode=mode;
+    mode = m;
+    targetRate = m==='fast'?FAST : m==='ultra'?ULTRA : 1;
+    // מעקב זמן-בהיסט: מתחיל למנות עם הכניסה למצב שונה מהעולם, מתאפס בחזרה להווה
+    if(m==='norm'){ driftStart=null; driftBoostSec=0; }
+    else if(prevMode!==m){
+      driftStart=performance.now();
+      // רק יציאה טרייה מהעולם הרגיל מאפסת את שעון היומן — מעבר בין מהיר לדילוג לא דוחה רשומה שכבר בדרך
+      if(prevMode==='norm') nextJournalAt=performance.now()+22000+Math.random()*6000;
+    }
+    if(prevMode!==m){ ensureAudio(); playGlissando(prevMode,m); }
+    document.querySelectorAll('#mainDial button, #camDial button').forEach(b=>{
+      b.classList.toggle('on',
+        (m==='norm'&&b.classList.contains('bNorm'))||
+        (m==='fast'&&b.classList.contains('bFast'))||
+        (m==='ultra'&&b.classList.contains('bUltra')));
+    });
+    jumpPalette=null;
+    document.body.className = m==='norm'?'':m;
+    const st=$('stateLine');
+    st.className='state'+(m==='fast'?' fast':m==='ultra'?' fast':'');
+    st.textContent = m==='fast'?'הזמן שלך דוהר — אתה בורח אל העתיד'
+                   : m==='ultra'?'הזמן שלך מתפרץ קדימה — ימים חולפים בין נשימה לנשימה'
+                   : 'הזמן שלך זורם עם העולם';
+  }
+  document.querySelectorAll('#mainDial button, #camDial button').forEach(b=>{
+    b.onclick = ()=> setMode(b.classList.contains('bFast')?'fast':b.classList.contains('bUltra')?'ultra':'norm');
+  });
+  const syncNow=()=>{ myMs = Date.now(); };
+  $('gap').addEventListener('click',syncNow);
+  $('syncBtn').addEventListener('click',syncNow);
+  $('camSync').addEventListener('click',()=>{ syncNow(); setMode('norm'); });
+
+  /* ----- שעון עולם אנלוגי ----- */
+  const wf=$('worldFace'), wctx=wf.getContext('2d');
+  function drawWorldFace(){
+    const s=160,c=s/2;
+    wctx.clearRect(0,0,s,s);
+    wctx.strokeStyle='#C4CCD5';
+    for(let i=0;i<60;i++){
+      if(i%5===0) continue;
+      const a=i*Math.PI/30;
+      wctx.lineWidth=1;
+      wctx.beginPath();
+      wctx.moveTo(c+Math.cos(a)*68,c+Math.sin(a)*68);
+      wctx.lineTo(c+Math.cos(a)*72,c+Math.sin(a)*72);
+      wctx.stroke();
+    }
+    wctx.fillStyle='#1B2430';
+    wctx.font='600 20px "Heebo",sans-serif';
+    wctx.textAlign='center'; wctx.textBaseline='middle';
+    for(let n=1;n<=12;n++){
+      const a=n*Math.PI/6 - Math.PI/2;
+      wctx.fillText(String(n), c+Math.cos(a)*56, c+Math.sin(a)*57);
+    }
+    const d=new Date();
+    const sec=d.getSeconds()+d.getMilliseconds()/1000;
+    const min=d.getMinutes()+sec/60;
+    const hr=(d.getHours()%12)+min/60;
+    const hand=(ang,len,w,color)=>{
+      wctx.strokeStyle=color;wctx.lineWidth=w;wctx.lineCap='round';
+      wctx.beginPath();wctx.moveTo(c,c);
+      wctx.lineTo(c+Math.cos(ang-Math.PI/2)*len,c+Math.sin(ang-Math.PI/2)*len);
+      wctx.stroke();
+    };
+    hand(hr/12*2*Math.PI,36,5,'#1B2430');
+    hand(min/60*2*Math.PI,54,3.5,'#1B2430');
+    hand(sec/60*2*Math.PI,62,1.8,'#C24A3E');
+    wctx.fillStyle='#1B2430';
+    wctx.beginPath();wctx.arc(c,c,4,0,7);wctx.fill();
+  }
+
+  /* ----- זרם החלקיקים ----- */
+  const cv=$('stream'), ctx=cv.getContext('2d');
+  const DPR=Math.min(devicePixelRatio||1,2);
+  let W,H;
+  function resize(){
+    W=innerWidth;H=innerHeight;
+    cv.width=W*DPR;cv.height=H*DPR;
+    cv.style.width=W+'px';cv.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  addEventListener('resize',resize);resize();
+
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const N=reduced?50:160;
+  const P=Array.from({length:N},()=>({x:Math.random()*W,y:H*0.2+Math.random()*H*0.62,v:0.5+Math.random(),r:1+Math.random()*2.4,ph:Math.random()*Math.PI*2}));
+
+  function col(t,alpha){
+    const r=t<0.5?lerp(217,120,t*2):lerp(120,62,(t-0.5)*2);
+    const g=t<0.5?lerp(142,130,t*2):lerp(130,123,(t-0.5)*2);
+    const b=t<0.5?lerp(43,140,t*2):lerp(140,196,(t-0.5)*2);
+    return `rgba(${r|0},${g|0},${b|0},${alpha})`;
+  }
+  const paperCol=()=>{const c=document.body.className;return c==='slow'?'245,237,222':c==='fast'?'228,235,245':'238,241,244';};
+
+  function lerpColor(a,b,t){ return [Math.round(lerp(a[0],b[0],t)),Math.round(lerp(a[1],b[1],t)),Math.round(lerp(a[2],b[2],t))]; }
+  const BG_NEUTRAL=[238,241,244], INK_NEUTRAL=[27,36,48];
+  const BG_FAST=[228,235,245], INK_FAST=[30,66,114];
+  const BG_ULTRA=[233,227,248], INK_ULTRA=[64,38,140];
+  function applyIntensityStyling(){
+    if(mode==='fast'){
+      const col=`rgb(${lerpColor(BG_NEUTRAL,BG_FAST,intensity).join(',')})`;
+      const pattern='repeating-linear-gradient(115deg, rgba(62,123,196,.11) 0px, rgba(62,123,196,.11) 2px, transparent 2px, transparent 24px)';
+      document.body.style.background = intensity>0.05 ? pattern+', '+col : col;
+      document.body.style.backgroundSize = '';
+    }else if(mode==='ultra'){
+      const col=`rgb(${lerpColor(BG_NEUTRAL,jumpPalette||BG_ULTRA,intensity).join(',')})`;
+      const pattern='radial-gradient(rgba(139,111,232,.2) 1.4px, transparent 1.4px)';
+      document.body.style.background = intensity>0.05 ? pattern+', '+col : col;
+      document.body.style.backgroundSize = intensity>0.05 ? '20px 20px, auto' : '';
+    }else{
+      document.body.style.background='';
+      document.body.style.backgroundSize='';
+    }
+  }
+  // t אפקטיבי לצורך ויזואליזציית הזרם: מתחיל ניטרלי (0.5) ומתקרב בהדרגה ל-t האמיתי לפי ההתעצמות
+  function effT(){ return lerp(0.5, rateT(), intensity); }
+  function drawStream(dt){
+    const t=effT();
+    ctx.fillStyle=`rgba(${paperCol()},${reduced?1:lerp(0.10,0.6,t)})`;
+    ctx.fillRect(0,0,W,H);
+    const speed=lerp(12,380,t**1.6), stretch=lerp(0,34,Math.max(0,(t-0.5)*2));
+    const size=lerp(3.1,0.9,t), glow=lerp(0.7,0.22,t);
+    for(const p of P){
+      p.x-=(speed*p.v)*dt;
+      p.ph+=dt*lerp(1.6,0.3,t);
+      const wob=Math.sin(p.ph)*lerp(8,1,t);
+      if(p.x<-40){p.x=W+40;p.y=H*0.2+Math.random()*H*0.62;}
+      const y=p.y+wob;
+      if(stretch>1){
+        ctx.strokeStyle=col(t,glow*p.v);ctx.lineWidth=size*p.r*0.7;
+        ctx.beginPath();ctx.moveTo(p.x,y);ctx.lineTo(p.x+stretch*p.v*2,y);ctx.stroke();
+      }else{
+        ctx.fillStyle=col(t,glow*(0.5+0.5*Math.sin(p.ph*0.7)+0.2)*Math.min(1,p.v));
+        ctx.beginPath();ctx.arc(p.x,y,size*p.r,0,7);ctx.fill();
+      }
+    }
+  }
+
+  /* ================= עדשת הזמן =================
+     העדשה מראה את העולם בזמן שלך:
+     בעבר — פריימים מושהים מתוך חוצץ · בהווה — שידור חי · בעתיד — עולם שכבר קרה */
+  const camView=$('camView'), camCv=$('camCanvas'), cctx=camCv.getContext('2d');
+  const vid=$('camVideo');
+  const trail=document.createElement('canvas'), tctx=trail.getContext('2d');   // ממוצע העולם (עתיד)
+  const expo=document.createElement('canvas'), ectx=expo.getContext('2d');     // חשיפת 5 שניות
+  const grab=document.createElement('canvas'), gctx=grab.getContext('2d');     // לכידה לחוצץ העבר
+  let camOpen=false, stream=null, facing='environment', firstFrame=true, camOpenMyMs=0;
+  let recorder=null, chunks=[], recStart=0;
+  let expoActive=false, expoStart=0, expoTimer=null, pressT=0;
+  let camZoom=1;
+  const CAM_DPR=Math.min(devicePixelRatio||1,1.5);
+
+  /* חוצץ העבר: עד 45 שניות אחורה */
+  const BUF_FPS=5, BUF_MAX=45000;
+  const buf=[]; let bufTimer=null, grabBusy=false;
+  let shownT=0, shownBmp=null, decoding=false;
+
+  function camResize(){
+    camCv.width=innerWidth*CAM_DPR; camCv.height=innerHeight*CAM_DPR;
+    trail.width=expo.width=camCv.width;
+    trail.height=expo.height=camCv.height;
+    grab.width=Math.round(camCv.width/2);
+    grab.height=Math.round(camCv.height/2);
+  }
+  function startBuffer(){
+    stopBuffer();
+    bufTimer=setInterval(()=>{
+      if(!camOpen||vid.readyState<2||grabBusy) return;
+      grabBusy=true;
+      coverDrawTo(gctx, grab.width, grab.height, 1);
+      grab.toBlob(b=>{
+        grabBusy=false;
+        if(!b) return;
+        buf.push({t:Date.now(), blob:b});
+        const cut=Date.now()-BUF_MAX;
+        while(buf.length && buf[0].t<cut) buf.shift();
+      },'image/jpeg',0.6);
+    },1000/BUF_FPS);
+  }
+  function stopBuffer(){
+    if(bufTimer){clearInterval(bufTimer);bufTimer=null;}
+    buf.length=0; shownT=0;
+    if(shownBmp&&shownBmp.close) shownBmp.close();
+    shownBmp=null;
+  }
+
+  async function openCam(){
+    camResize();
+    camView.classList.add('open');
+    $('camMsg').style.display='none';
+    try{
+      try{
+        stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1920},height:{ideal:1920}},audio:true});
+      }catch(e1){
+        // נפילה חזרה: אם רק המיקרופון נכשל (הרשאה שנדחתה, אין מכשיר קול וכו') — העדשה עדיין יכולה לעבוד בלי שמע
+        stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1920},height:{ideal:1920}}});
+      }
+      vid.srcObject=stream; await vid.play();
+      if(stream.getAudioTracks().length){
+        ensureAudio();
+        if(AC.state==='suspended') AC.resume();
+        if(micGainNode){micGainNode.disconnect();}
+        const micSrc = AC.createMediaStreamSource(stream);
+        micGainNode = AC.createGain(); micGainNode.gain.value=1;
+        micSrc.connect(micGainNode); micGainNode.connect(recDest);
+      }
+      camOpen=true; firstFrame=true; camOpenMyMs=myMs;
+      startBuffer();
+    }catch(e){
+      const msg=$('camMsg'); msg.style.display='grid';
+      if(location.protocol!=='https:'){
+        msg.textContent = 'העדשה עובדת רק בכתובת https — העלה את הקובץ ל־Netlify ופתח משם.';
+      }else if(e.name==='NotAllowedError' || e.name==='PermissionDeniedError'){
+        msg.textContent = 'אין הרשאה למצלמה. בדוק בהגדרות הדפדפן/המכשיר שהאתר מורשה לגשת למצלמה, ונסה שוב.';
+      }else if(e.name==='NotFoundError' || e.name==='DevicesNotFoundError'){
+        msg.textContent = 'לא נמצאה מצלמה זמינה במכשיר.';
+      }else if(e.name==='NotReadableError' || e.name==='TrackStartError'){
+        msg.textContent = 'המצלמה תפוסה כרגע על ידי אפליקציה אחרת. סגור אפליקציות אחרות שמשתמשות במצלמה ונסה שוב.';
+      }else{
+        msg.textContent = 'אין גישה למצלמה. בדוק הרשאות בדפדפן ונסה שוב. (שגיאה: '+(e.name||'לא ידועה')+')';
+      }
+    }
+  }
+  function closeCam(){
+    if(recorder && recorder.state!=='inactive') recorder.stop();
+    camOpen=false; camView.classList.remove('open');
+    expoActive=false;
+    stopBuffer();
+    if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+    returnFromCameraFlowIfNeeded();
+  }
+  let camOpenedFromPrediction=false;
+  function returnFromCameraFlowIfNeeded(){
+    camOpenedFromPrediction=false;
+    selectedPerkTopicId=null;
+    startTelescope(true);
+  }
+  $('openCam').onclick=openCam;
+  $('closeCam').onclick=closeCam;
+  $('flipCam').onclick=async ()=>{
+    facing = facing==='environment'?'user':'environment';
+    if(stream){stream.getTracks().forEach(t=>t.stop());}
+    try{
+      try{
+        stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1920},height:{ideal:1920}},audio:true});
+      }catch(e1){
+        stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1920},height:{ideal:1920}}});
+      }
+      vid.srcObject=stream;await vid.play();firstFrame=true;
+      buf.length=0;
+      if(stream.getAudioTracks().length){
+        if(micGainNode) micGainNode.disconnect();
+        const micSrc=AC.createMediaStreamSource(stream);
+        micGainNode=AC.createGain();micGainNode.gain.value=1;
+        micSrc.connect(micGainNode);micGainNode.connect(recDest);
+      }
+    }catch(e){
+      const msg=$('camMsg'); msg.style.display='grid';
+      msg.textContent = 'לא ניתן להחליף מצלמה — ' + (e.name==='NotFoundError' ? 'לא נמצאה מצלמה נוספת במכשיר.' : 'בדוק הרשאות ונסה שוב.');
+    }
+  };
+  $('zoomBtn').onclick=()=>{
+    camZoom = camZoom===1 ? 2 : 1;
+    const zb=$('zoomBtn');
+    zb.textContent = camZoom+'x';
+    zb.classList.toggle('z2', camZoom===2);
+    firstFrame=true; buf.length=0;
+  };
+
+  /* ---------- חותם תיעוד עתידי: מספר סידורי משותף לתמונות ולאיגרות ---------- */
+  function nextArtifactSeq(){
+    let n = +(localStorage.getItem('zb_artifact_seq')||0) + 1;
+    try{ localStorage.setItem('zb_artifact_seq', n); }catch(e){}
+    return n;
+  }
+  function drawSealIcon(ctx,cx,cy,r){
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.fillStyle='rgba(20,14,4,0.55)'; ctx.fill();
+    ctx.strokeStyle='#E8C878'; ctx.lineWidth=Math.max(1,r*0.07); ctx.stroke();
+    ctx.strokeStyle='#E8C878'; ctx.lineWidth=Math.max(1,r*0.09); ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx,cy-r*0.55); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r*0.4,cy+r*0.22); ctx.stroke();
+    ctx.restore();
+  }
+  /* חותם התיעוד המלא — נכתב רק ברגע הצילום/היצירה בפועל, לא בכל פריים, כדי שהמספר יהיה ייחודי ואמיתי */
+  function stampArtifactSeal(ctx,w,h,gapSec){
+    const seq = nextArtifactSeq();
+    const r = Math.round(w*0.03);
+    const cx = w - r - w*0.045, cy = r + h*0.04;
+    drawSealIcon(ctx, cx, cy, r);
+    ctx.save();
+    ctx.textAlign='right';
+    ctx.shadowColor='rgba(0,0,0,.65)'; ctx.shadowBlur=5;
+    const fSize=Math.round(w*0.0195), gap=fSize*1.35;
+    let ty=cy - gap*1.25;
+    ctx.font = `600 ${fSize}px "IBM Plex Mono", ui-monospace, monospace`;
+    ctx.fillStyle='#F0DCA8'; ctx.textBaseline='middle';
+    ctx.fillText('צולם בעתיד #'+String(seq).padStart(6,'0'), cx-r-10, ty); ty+=gap*0.95;
+    ctx.font = `400 ${Math.round(fSize*0.8)}px "Heebo", sans-serif`;
+    ctx.fillStyle='#D8C89A';
+    ctx.fillText('מועד המשלוח: '+fmtDateTime(myMs), cx-r-10, ty); ty+=gap*0.8;
+    ctx.fillText('מועד הקבלה: '+fmtDateTime(Date.now()), cx-r-10, ty);
+    ctx.restore();
+    return seq;
+  }
+  function stampOn(dst){
+    const w=camCv.width,h=camCv.height,f=Math.round(w*0.028);
+    dst.save();
+    dst.font=`500 ${f}px "IBM Plex Mono",monospace`;
+    dst.textAlign='left';dst.textBaseline='bottom';
+    dst.shadowColor='rgba(0,0,0,.7)';dst.shadowBlur=6;
+    dst.fillStyle='#fff';
+    const gapSec=(Date.now()-myMs)/1000;
+    dst.fillText(fmtFull(myMs)+'  '+fmtGap(gapSec), f, h-f);
+    dst.font=`300 ${Math.round(f*0.72)}px "Heebo",sans-serif`;
+    dst.fillText('משחקי זמן', f, h-f*2.1);
+    dst.restore();
+  }
+  const stamp=()=>stampOn(cctx);
+
+  function coverDrawTo(dst,w,h,alpha,src){
+    src = src || vid;
+    const vw=src.videoWidth||src.width, vh=src.videoHeight||src.height;
+    if(!vw||!vh) return;
+    const sc=Math.max(w/vw,h/vh)*(src===vid?camZoom:1), dw=vw*sc, dh=vh*sc;
+    dst.globalAlpha=alpha;
+    if(src===vid && facing==='user'){
+      dst.save();dst.translate(w,0);dst.scale(-1,1);
+      dst.drawImage(src,(w-dw)/2,(h-dh)/2,dw,dh);
+      dst.restore();
+    }else dst.drawImage(src,(w-dw)/2,(h-dh)/2,dw,dh);
+    dst.globalAlpha=1;
+  }
+  const coverDraw=(dst,alpha)=>coverDrawTo(dst,camCv.width,camCv.height,alpha);
+
+  function vignette(amt,warm){
+    const w=camCv.width,h=camCv.height;
+    const g=cctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.32,w/2,h/2,Math.max(w,h)*0.72);
+    const c = warm ? '60,35,5' : '5,20,45';
+    g.addColorStop(0,`rgba(${c},0)`);
+    g.addColorStop(1,`rgba(${c},${amt})`);
+    cctx.fillStyle=g; cctx.fillRect(0,0,w,h);
+  }
+
+  /* ציור העבר: הפריים הקרוב ביותר לזמן שלך */
+  function drawPast(delayMs){
+    const targetT=Date.now()-delayMs;
+    let f=null;
+    for(let i=buf.length-1;i>=0;i--){ if(buf[i].t<=targetT){f=buf[i];break;} }
+    if(!f && buf.length) f=buf[0];
+    if(f && f.t!==shownT && !decoding){
+      decoding=true;
+      createImageBitmap(f.blob).then(bmp=>{
+        if(shownBmp&&shownBmp.close) shownBmp.close();
+        shownBmp=bmp; shownT=f.t; decoding=false;
+      }).catch(()=>{decoding=false;});
+    }
+    if(shownBmp){
+      coverDrawTo(cctx,camCv.width,camCv.height,1,shownBmp);
+      return Date.now()-shownT;
+    }
+    coverDraw(cctx,1);
+    return 0;
+  }
+
+  function drawCam(now,dt){
+    if(!camOpen || vid.readyState<2) return;
+    const w=camCv.width,h=camCv.height;
+    const gapSec=(Date.now()-myMs)/1000;
+    const cap=$('lensCaption');
+
+    if(firstFrame){ coverDraw(tctx,1); }
+
+    if(gapSec>1.5){
+      /* ===== אתה בעבר: העדשה מראה את העולם כפי שהיה בזמן שלך ===== */
+      const wantMs=Math.min(gapSec*1000, BUF_MAX);
+      const actualMs=drawPast(wantMs);
+      cctx.fillStyle=`rgba(224,150,50,${0.09*lerp(0.03,1,intensity)})`; cctx.fillRect(0,0,w,h);
+      vignette(0.38*lerp(0.03,1,intensity),true);
+      const shownSec=actualMs/1000;
+      cap.textContent = shownSec < gapSec-1 && gapSec*1000>actualMs+1500 && wantMs>actualMs+1500
+        ? 'אתה צופה בעולם של לפני '+fmtDur(shownSec)+' — העבר עוד נטען…'
+        : 'אתה צופה בעולם של לפני '+fmtDur(shownSec);
+    }else if(gapSec<-1.5){
+      /* ===== אתה בעתיד: התמונה נשארת ברורה — התחושה של "רחוק בזמן" כבר ניתנת במסך "מה קורה כאן?", לא כאן ===== */
+      const CAM_FUTURE_CLARITY=0.15; // כמה מעוצמת האפקט המקורית נשארת (המצלמה היא כלי תיעוד, לא אווירה)
+      const baseAmt=clamp01(Math.max(0.35,-gapSec/30));
+      const amt=baseAmt*lerp(0.03,1,intensity)*CAM_FUTURE_CLARITY;
+      // מרחק מצטבר (בלוג): כמה רחוק כבר נסעת בסשן הזה, ללא תלות במהירות הרגעית
+      const distanceT=clamp01(Math.log(1+(-gapSec)/60)/Math.log(1+1440))*CAM_FUTURE_CLARITY;
+      const tintR=lerp(62,98,distanceT), tintG=lerp(123,64,distanceT), tintB=lerp(190,190,distanceT);
+      // הבזק מידע: ברגעים נדירים (תדירותם עולה עם ההתעצמות) העולם מתחדד לרגע
+      const burstPhase=(Math.sin(now/1000*lerp(0.4,2.2,intensity))+1)/2;
+      const burstSharp=intensity>0.15 && burstPhase>0.94 ? (burstPhase-0.94)/0.06 : 0;
+      if(burstSharp>0.85 && now-lastNotifyAt>2500){ lastNotifyAt=now; playNotify(); }
+      tctx.globalAlpha=lerp(0.5,0.055,amt)*(1-burstSharp*0.7)*CAM_FUTURE_CLARITY;
+      coverDraw(tctx,tctx.globalAlpha);
+      tctx.globalAlpha=1;
+      cctx.drawImage(trail,0,0);
+      if(burstSharp>0){
+        coverDraw(cctx, burstSharp*0.5);
+        cctx.fillStyle=`rgba(255,255,255,${burstSharp*burstSharp*0.5})`; cctx.fillRect(0,0,w,h);
+      }
+      // ריצוד-דהייה (streak): ככל שהמרחק גדל, נוצר כפל-דמות עדין כאילו העולם נמרח מהמהירות
+      if(distanceT>0.05){
+        cctx.save();
+        cctx.globalAlpha=0.16*distanceT*lerp(0.15,1,intensity);
+        cctx.drawImage(trail, 5+9*distanceT, 0);
+        cctx.globalAlpha=0.10*distanceT*lerp(0.15,1,intensity);
+        cctx.drawImage(trail, -(5+9*distanceT), 0);
+        cctx.restore();
+      }
+      cctx.fillStyle=`rgba(${tintR|0},${tintG|0},${tintB|0},${amt*(0.10+distanceT*0.16)})`; cctx.fillRect(0,0,w,h);
+      // אברציה כרומטית: פיצול אדום/ציאן — נשאר עדין מאוד, נגיעה אווירתית בלבד
+      drawChroma((2+16*distanceT*lerp(0.25,1,intensity))*CAM_FUTURE_CLARITY);
+      vignette(0.3*lerp(0.03,1,intensity)*lerp(1,2.0,distanceT)*CAM_FUTURE_CLARITY,false);
+      drawFloatWords(dt,intensity,tintR,tintG,tintB,distanceT);
+      cap.textContent='אתה '+fmtDur(-gapSec)+' לפני העולם — מה שאתה רואה כבר עבר מבחינתך';
+    }else{
+      coverDraw(cctx,1);
+      cap.textContent='אתה בהווה — הזמן שלך והעולם חופפים';
+    }
+    firstFrame=false;
+
+    /* חשיפת 5 שניות: העדשה נערמת לתמונה אחת */
+    if(expoActive){
+      ectx.globalAlpha=0.05;
+      ectx.drawImage(camCv,0,0);
+      ectx.globalAlpha=1;
+      const el=(now-expoStart)/1000, remain=Math.max(0,5-el);
+      const cx=w/2, cy=h/2, r=Math.min(w,h)*0.16;
+      cctx.save();
+      cctx.strokeStyle='rgba(255,255,255,0.9)'; cctx.lineWidth=w*0.008; cctx.lineCap='round';
+      cctx.beginPath(); cctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+(el/5)*2*Math.PI); cctx.stroke();
+      cctx.fillStyle='#fff'; cctx.font=`300 ${Math.round(r*0.8)}px "IBM Plex Mono",monospace`;
+      cctx.textAlign='center'; cctx.textBaseline='middle';
+      cctx.fillText(Math.ceil(remain), cx, cy);
+      cctx.restore();
+      if(el>=5){
+        expoActive=false;
+        stampOn(ectx);
+        const gsExp=(Date.now()-myMs)/1000;
+        if((mode==='fast'||mode==='ultra') && gsExp<-1.5) stampArtifactSeal(ectx,expo.width,expo.height,gsExp);
+        expo.toBlob(b=>b&&showShot(b,false,myMs),'image/jpeg',0.92);
+      }
+    }
+    stamp();
+  }
+
+  /* ----- צילום ותוצרים ----- */
+  const shot=$('shot'), shotImg=$('shotImg'), shotVid=$('shotVid');
+  let lastBlob=null,lastName='';
+  let lastFutureMs=Date.now();
+  function showShot(blob,isVideo,futureMs){
+    lastBlob=blob;
+    lastFutureMs = futureMs!==undefined ? futureMs : Date.now();
+    lastName=(isVideo?'zmani-video-':'zmani-photo-')+Date.now()+(isVideo?'.mp4':'.jpg');
+    const url=URL.createObjectURL(blob);
+    shotImg.style.display=isVideo?'none':'block';
+    shotVid.style.display=isVideo?'block':'none';
+    if(isVideo){shotVid.src=url;}else{shotImg.src=url;}
+    $('saveShot').href=url;$('saveShot').download=lastName;
+    $('makePostcard').style.display=isVideo?'none':'inline-block';
+    shot.classList.add('open');
+  }
+  $('closeShot').onclick=()=>{shot.classList.remove('open');shotVid.pause();returnFromCameraFlowIfNeeded();};
+  $('shareShot').onclick=async ()=>{
+    if(!lastBlob) return;
+    const file=new File([lastBlob],lastName,{type:lastBlob.type});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],title:'משחקי זמן'});}catch(e){}
+    }else alert('שיתוף קבצים לא נתמך כאן — השתמש בשמירה');
+  };
+
+  /* ---------- גלויית סלפי: התמונה שלך על רקע העולם העתידי שנצפה לאותה תקופה ---------- */
+  let postcardBlob=null, postcardFileName='';
+  async function generatePostcard(){
+    if(!lastBlob) return;
+    const url=URL.createObjectURL(lastBlob);
+    const d=new Date(lastFutureMs);
+    const targetYear=d.getFullYear();
+    const yearsAhead=targetYear-new Date().getFullYear();
+    const key=keyForTarget(targetYear,yearsAhead);
+    if(selectedPerkTopicId){
+      const t=ENCY_TOPICS.find(x=>x.id===selectedPerkTopicId);
+      const bucket=bucketForYears(Math.min(100,Math.max(1,yearsAhead)));
+      const entry=encyEntry(selectedPerkTopicId,bucket);
+      $('pcBg').style.background=`radial-gradient(circle at 50% 28%, ${t.accent}2e, #0B0E14 72%)`;
+      $('pcBg').innerHTML=buildEncyIllustration(t.motif,t.accent).replace('<svg ','<svg width="340" height="340" style="position:absolute;top:6%;left:50%;transform:translateX(-50%);opacity:0.55" ');
+      $('pcCaption').textContent=entry.teaser;
+      selectedPerkTopicId=null;
+    }else{
+      $('pcBg').style.background=PRED_PALETTES[key].bg;
+      $('pcBg').innerHTML=buildSceneSVG(key,targetYear);
+      $('pcCaption').textContent='רגע שנתפס בזמן שלך, ב-'+pad(d.getHours())+':'+pad(d.getMinutes());
+    }
+    $('pcDateTag').textContent=d.getDate()+' ב'+heMonL[d.getMonth()]+' '+d.getFullYear();
+    $('pcDistance').textContent = yearsAhead>=1 ? ('+'+yearsAhead+' שנים קדימה מהיום') : '';
+    $('pcSeal').textContent='עותק #'+String(nextArtifactSeq()).padStart(6,'0');
+    shot.classList.remove('open');
+    try{
+      await new Promise((resolve,reject)=>{
+        const pre=new Image();
+        pre.onload=resolve; pre.onerror=reject;
+        pre.src=url;
+      });
+      $('pcPhotoFrame').style.backgroundImage='url('+url+')';
+      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+      const canvas=await html2canvas($('postcardCard'),{backgroundColor:null,scale:2,useCORS:true});
+      canvas.toBlob(blob=>{ if(blob) showPostcardSend(blob); },'image/png',0.95);
+    }catch(e){ alert('יצירת הגלויה נכשלה — נסה שוב'); }
+  }
+  function showPostcardSend(blob){
+    postcardBlob=blob;
+    postcardFileName='glouyat-selfie-'+Date.now()+'.png';
+    const url=URL.createObjectURL(blob);
+    $('pcSendPreview').src=url;
+    $('pcSave').href=url; $('pcSave').download=postcardFileName;
+    $('postcardSendModal').classList.add('open');
+  }
+  async function dispatchPostcard(){
+    if(!postcardBlob) return;
+    const file=new File([postcardBlob],postcardFileName,{type:postcardBlob.type});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{
+        await navigator.share({files:[file],title:'סלפי מהעתיד'});
+        setTimeout(()=>{ $('postcardSendModal').classList.remove('open'); },400);
+      }catch(e){}
+    }else{
+      alert('שיתוף ישיר לא נתמך בדפדפן הזה — אפשר לשמור לגלריה ולצרף ידנית.');
+    }
+  }
+  $('makePostcard').onclick=generatePostcard;
+  $('pcShare').onclick=dispatchPostcard;
+  $('pcWa').onclick=dispatchPostcard;
+  $('pcGm').onclick=dispatchPostcard;
+  $('pcSm').onclick=dispatchPostcard;
+  $('pcClose').onclick=()=>{ $('postcardSendModal').classList.remove('open'); returnFromCameraFlowIfNeeded(); };
+
+
+  /* צמצם: הקשה = צילום · לחיצה ארוכה = חשיפת 5 שניות */
+  function startExpo(){
+    if(expoActive) return;
+    ectx.clearRect(0,0,expo.width,expo.height);
+    ectx.globalAlpha=1; ectx.drawImage(camCv,0,0);
+    expoActive=true; expoStart=performance.now();
+  }
+  const snapEl=$('snap');
+  snapEl.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    pressT=Date.now();
+    expoTimer=setTimeout(startExpo,420);
+  });
+  snapEl.addEventListener('pointerup',e=>{
+    e.preventDefault();
+    clearTimeout(expoTimer);
+    if(!expoActive && Date.now()-pressT<420){
+      // המתנה קצרה לפני התפיסה בפועל — נותנת ליד להתייצב אחרי הנגיעה, כדי שהתמונה לא תיצא מטושטשת
+      setTimeout(()=>{
+        const gs0=(Date.now()-myMs)/1000;
+        const inFuture0 = (mode==='fast'||mode==='ultra') && gs0<-1.5;
+        if(inFuture0) stampArtifactSeal(cctx,camCv.width,camCv.height,gs0);
+        camCv.toBlob(b=>{
+          if(!b) return;
+          showShot(b,false,myMs);
+          const gs=(Date.now()-myMs)/1000;
+          if((mode==='fast'||mode==='ultra') && gs<-1.5){
+            futureSnaps.push({blob:b, url:URL.createObjectURL(b), ms:Date.now()});
+            selectedSnapIdx=futureSnaps.length-1; // התמונה החדשה נבחרת אוטומטית
+            refreshAttachUI();
+            addJournalEntry('נשלחה תמונה לעולם המקור.');
+            driftBoostSec=Math.min(200,driftBoostSec+70); // שליחת תמונה מהעתיד היא מעשה משמעותי — היא מקדמת את תחושת ההיסט ממש עכשיו, לא רק חיכוי פסיבי
+            transmissionFX();
+          }
+        },'image/jpeg',0.92);
+      },250);
+    }
+  });
+  snapEl.addEventListener('pointercancel',()=>clearTimeout(expoTimer));
+
+  function pickMime(){
+    for(const mt of ['video/mp4','video/webm;codecs=vp9','video/webm']){
+      if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mt)) return {mimeType:mt};
+    }
+    return {};
+  }
+  $('rec').onclick=()=>{
+    const btn=$('rec');
+    if(recorder && recorder.state==='recording'){recorder.stop();return;}
+    ensureAudio();
+    if(AC.state==='suspended') AC.resume();
+    const cs=camCv.captureStream(30);
+    const mixed=new MediaStream([...cs.getVideoTracks(), ...recDest.stream.getAudioTracks()]);
+    try{recorder=new MediaRecorder(mixed,pickMime());}catch(e){alert('הקלטת וידאו לא נתמכת בדפדפן זה');return;}
+    chunks=[];recStart=Date.now();
+    recorder.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+    recorder.onstop=()=>{
+      btn.classList.remove('rec');$('recTime').style.display='none';
+      showShot(new Blob(chunks,{type:recorder.mimeType||'video/mp4'}),true);
+    };
+    recorder.start(250);
+    btn.classList.add('rec');$('recTime').style.display='block';
+  };
+
+  /* ----- לולאה ראשית ----- */
+  function frame(now){
+    const dt=Math.min(0.1,(now-last)/1000);last=now;
+    rate+=(targetRate-rate)*Math.min(1,dt*2.5);
+    myMs+=dt*1000*rate;
+
+    // התעצמות הדרגתית: עולה עם הזמן שנשארים בהיסט + "בונוס" ממעשים משמעותיים (שליחת תמונה מהעתיד) — יורדת חלק כשחוזרים להווה
+    intensityTarget = driftStart===null ? 0 : intensityCurve((now-driftStart)/1000 + driftBoostSec);
+    intensity += (intensityTarget-intensity)*Math.min(1, dt*(intensityTarget>intensity?1.2:2.2));
+    maybeBurst(now/1000);
+    applyIntensityStyling();
+
+    if(Math.abs(targetRate-1)>0.01 && budget>0){
+      budget-=dt*(mode==='ultra'?2.2:1);
+      if(budget<=0){budget=0;setMode('norm');}
+    }
+
+    drawWorldFace();
+    updateDrone();
+
+    const nowMs=Date.now(), m=fmtHMS(myMs);
+    const w2=fmtHMS(nowMs);
+    $('wHm').textContent=w2.hm;
+    $('wSs').textContent=w2.s;
+    $('hm').textContent=m.hm;
+    const secEl=$('ss');
+    if(m.s!==secEl.textContent){
+      secEl.textContent=m.s;
+      secEl.classList.remove('tickBeat');void secEl.offsetWidth;
+      secEl.style.setProperty('--beat',Math.min(1.4,1/rate)+'s');
+      secEl.classList.add('tickBeat');
+      playTick();
+    }
+    const gapSec=(nowMs-myMs)/1000;
+    const g=$('gap');
+    g.textContent=fmtGap(gapSec);
+    g.className='gap'+(gapSec>0.5?' plus':gapSec<-0.5?' minus':'');
+
+    $('budgetTxt').textContent=fmtBudget(budget);
+    $('budgetBar').style.width=(budget/7200*100)+'%';
+    $('budgetBox').classList.toggle('low',budget<600);
+
+    if(camOpen){
+      $('camClock').textContent=fmtFull(myMs);
+      $('camGap').textContent=fmtGap(gapSec);
+      const fc=$('futureCounter'), fcSec=Math.max(0,Math.floor((myMs-camOpenMyMs)/1000));
+      const fcStr=String(fcSec).padStart(6,'0');
+      const fcNumEl=$('fcNum');
+      if(fcNumEl.textContent!==fcStr){
+        fcNumEl.textContent=fcStr;
+        fc.classList.remove('tick');void fc.offsetWidth;
+        fc.classList.add('tick');
+      }
+      fc.classList.toggle('fast',mode==='fast');
+      fc.classList.toggle('ultra',mode==='ultra');
+      drawCam(now,dt);
+      if(recorder&&recorder.state==='recording'){
+        const s=Math.floor((Date.now()-recStart)/1000);
+        $('recTime').textContent='● '+Math.floor(s/60)+':'+pad(s%60);
+      }
+    }else{
+      drawStream(dt);
+    }
+    $('gapWhen').textContent = Math.abs(gapSec)<1.5 ? 'אתה בהווה' : fmtWhen(gapSec);
+    $('gapWhen').className = gapSec>0.5?'plus':gapSec<-0.5?'minus':'';
+    {
+      const dMy=new Date(myMs), dNow=new Date(nowMs);
+      const sameDay = dMy.getFullYear()===dNow.getFullYear() && dMy.getMonth()===dNow.getMonth() && dMy.getDate()===dNow.getDate();
+      $('clockDate').textContent = sameDay ? '' : (dMy.getDate()+' ב'+heMonL[dMy.getMonth()]+' '+dMy.getFullYear());
+    }
+    updateLetterButton(gapSec);
+    updatePredictionButton();
+    maybeJournal(now,gapSec);
+    maybeUnlockJump();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  /* ================= איגרת מן העתיד =================
+     זמינה רק כשאתה בעתיד (מצב מהיר) ורק אחרי שההיסט קצת התבסס —
+     כדי שהיא תרגיש כמו הישג של ריחוק אמיתי, לא כפתור שזמין תמיד. */
+  /* ---------- יומן המסע: רשומות שנכתבות לבד תוך כדי הנסיעה ---------- */
+  /* יומן פשוט ואמין: רוב הרשומות ניטרליות ("אין אירועים מיוחדים"),
+     ורק פעולות אמיתיות (צילום, שליחת איגרת) מקבלות שורה משלהן */
+  let journal=[], nextJournalAt=Infinity;
+  const IDLE_LINES=['אין אירועים מיוחדים.','שקט. שום דבר חדש.','אין שינוי מהרישום הקודם.'];
+  function addJournalEntry(text, realMs, futureMs){
+    journal.push({ realMs: realMs!==undefined?realMs:Date.now(), futureMs: futureMs!==undefined?futureMs:myMs, text:'אני בעולם העתיד. '+text });
+  }
+  function maybeJournal(now,gapSec){
+    if((mode!=='fast'&&mode!=='ultra') || gapSec>-1.5) return;
+    if(now<nextJournalAt) return;
+    const line = IDLE_LINES[Math.floor(Math.random()*IDLE_LINES.length)];
+    addJournalEntry(line);
+    nextJournalAt = now + 45000 + Math.random()*20000;
+  }
+
+  /* כפתור סגירה: הדפדפן מרשה window.close() רק לחלונות שנפתחו בסקריפט —
+     ברוב המקרים (כרטיסייה שנפתחה ידנית) זה יידחה בשקט, אז מגיבים בכנות במקום להעמיד פנים */
+  $('closeBtn').onclick=()=>{
+    try{ window.close(); }catch(e){}
+    setTimeout(()=>{ $('closeOverlay').classList.add('open'); }, 150);
+  };
+  $('closeBack').onclick=()=>$('closeOverlay').classList.remove('open');
+
+  let jumpUnlocked=false;
+  try{ jumpUnlocked = localStorage.getItem('zb_jump_unlocked')==='1'; }catch(e){}
+  if(jumpUnlocked) $('jumpLaunch').style.display='block';
+  function maybeUnlockJump(){
+    updateJumpHint();
+    if(jumpUnlocked || (mode!=='fast'&&mode!=='ultra') || intensity<0.999) return;
+    jumpUnlocked=true;
+    try{ localStorage.setItem('zb_jump_unlocked','1'); }catch(e){}
+    const btn=$('jumpLaunch');
+    btn.style.display='block';
+    btn.classList.add('justUnlocked');
+    addJournalEntry('נפתחה יכולת קפיצת זמן — אחרי שממש הרגשת מרחק אמיתי מהעולם.');
+  }
+  function updateJumpHint(){
+    const hint=$('jumpHint');
+    if(jumpUnlocked || !(mode==='fast'||mode==='ultra')){ hint.style.display='none'; return; }
+    hint.style.display='block';
+    $('jumpBarFill').style.width=Math.round(100*Math.min(1,intensity/0.999))+'%';
+  }
+
+  const LETTER_MIN_INTENSITY=0.15;
+  function updateLetterButton(gapSec){
+    const btn=$('letterLaunch');
+    const eligible = (mode==='fast'||mode==='ultra') && gapSec<-1.5;
+    if(!eligible){ btn.style.display='none'; return; }
+    btn.style.display='block';
+    if(intensity>=LETTER_MIN_INTENSITY){
+      btn.classList.remove('pending');
+    }else{
+      btn.classList.add('pending');
+      $('llBarFill').style.width=Math.round(100*intensity/LETTER_MIN_INTENSITY)+'%';
+    }
+  }
+  const heMonL=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  const fmtLetterDate = ms => { const d=new Date(ms); return d.getDate()+' ב'+heMonL[d.getMonth()]+' '+d.getFullYear(); };
+  const fmtLetterTime = ms => { const d=new Date(ms); return pad(d.getHours())+':'+pad(d.getMinutes()); };
+
+  /* ---------- תחזית CLAUDE — בנק תחזיות קבוע מראש, לפי מרחק בשנים ---------- */
+  const PREDICTIONS={
+    near:[
+      {tech:'מודלי בינה מלאכותית עצמאיים מבצעים משימות עבודה שלמות מקצה לקצה — כתיבת קוד, ניהול פרויקטים, מחקר רפואי ראשוני — בפיקוח קל, לא בביצוע אנושי. חברות טכנולוגיה גדולות מפרסמות שיעורי "אוטונומיה" של הסוכנים שלהן כמדד שיווקי מרכזי.',economy:'שוק העבודה עובר טלטלה: משרות ניהול-ביניים מצטמצמות במהירות, בעוד ביקוש לאנשים שיודעים "לנהל" צוותי AI מזנק. ממשלות מתחילות לדון ברצינות במיסוי נפרד על שימוש מסחרי בבינה מלאכותית.',society:'גלי חום קטלניים בקיץ הופכים לאירוע חדשות שבועי, לא חד-פעמי, ורשויות מתחילות לתקצב "ימי חום" כמו שתקצבו בעבר ימי שלג. ערים גדולות פותחות מרכזי קירור ציבוריים קבועים, לא זמניים.',question:'אם AI כותב את רוב הקוד בעולם, מי בעצם אחראי כשמשהו קורס — החברה, המתכנת, או אף אחד?'},
+      {tech:'רובוטים הומנואידים מתחילים לעבוד במחסנים ובבתי חולים במספרים משמעותיים, לא רק בהדגמות. חברות ייצור מדווחות על קיצור זמני אספקה בעשרות אחוזים בזכות כך.',economy:'מדינה אחת לפחות מריצה הכנסה בסיסית אוניברסלית ברמה לאומית של ממש, לא רק פיילוט מקומי. שוק המניות מתחיל להעניק פרמיה גבוהה במיוחד לחברות עם "יחס אוטומציה" גבוה.',society:'השיח הציבורי על משמעות העבודה מתחדד — מקצועות יוקרתיים כמו רפואה ומשפטים מתחילים להרגיש מיותרים לצד AI מוכשר. תנועות חברתיות דורשות "זכות לעבודה אנושית" כערך מוגן, לא כמובן מאליו.',question:'מה קורה לתחושת המשמעות של עבודה, כשגם מקצועות יוקרתיים מתחילים להרגיש מיותרים?'},
+      {tech:'עוזרים אישיים מבוססי AI זוכרים כל שיחה שניהלת איתם אי פעם, ומתחילים לחזות מה תצטרך לפני שביקשת. חלקם מתחילים לנהל בשמך משימות שלמות בלי אישור מפורש בכל פעם.',economy:'שוק הדיור מתפצל לשניים: אזורים "חכמים" עם תשתית AI מובנית שיקרים משמעותית, ואזורים רגילים שנשארים מאחור. שירותי "ייעוץ חיים" מבוססי AI הופכים לתעשייה בפני עצמה.',society:'יותר ויותר בני זוג נפגשים ומתאהבים בעזרת AI שמנתח התאמה, לא רק אפליקציות היכרויות רגילות. מומחי זוגיות מתחילים להתמחות ספציפית ב"זוגות שנפגשו ב-AI".',question:'אם מכונה מכירה אותך טוב יותר מהחברים שלך — זה מפחיד או מרגיע?'}
+    ],
+    mid:[
+      {tech:'רוב הרופאים המשפחתיים בעולם המפותח מקבלים אבחנה ראשונית ממערכת AI לפני שהם נכנסים לחדר — וכבר לא מתווכחים איתה כמעט אף פעם. בתי ספר לרפואה משנים תוכניות לימוד כדי להתמקד בפיקוח על AI, לא רק באבחון עצמאי.',economy:'מרבית החברות הגדולות מדווחות רשמית על "יחס אדם-לסוכן AI" בדוחות הרבעוניים שלהן, ממש כמו שדיווחו בעבר על מספר עובדים. שוק ביטוחי האחריות המקצועית מתמוטט וקם מחדש סביב השאלה מי אחראי כשה-AI טועה.',society:'ערים שלמות בונות תשתיות "מרעננות" בקנה מידה עירוני — גגות לבנים, יערות עירוניים, מנהרות קירור — לא כפרויקט ירוק אלא כהישרדות. תושבים באזורים חמים במיוחד מתחילים לעבור צפונה בגלים מוגדרים, לא בהגירה אקראית.',question:'אם המכונה טועה פחות מרופא אנושי, האם עדיין תרצה שאדם יחתום על ההחלטה?'},
+      {tech:'מכוניות פרטיות בבעלות אישית הופכות לנדירות בערים גדולות — לא כי אסרו אותן, אלא כי תחבורה אוטונומית שיתופית זולה וקלה יותר. חברות רכב הופכות לחברות שירותי-ניידות, לא יצרניות מכוניות.',economy:'פער הפריון בין מי שמשתמש ב-AI באופן מלא לבין מי שלא, גדל עד כדי יתרון תעסוקתי מכריע, לא נוחות. כלכלות מקומיות סביב אנרגיה מתחדשת הופכות למרכזי צמיחה, בעוד ערים שהתבססו על דלק מתכווצות.',society:'בעלות פרטית על מכונית הופכת סימן סטטוס נדיר, לא צורך בסיסי — בדיוק כמו שעון יד מכני נהיה לפני שנים. דורות צעירים כבר לא לומדים לנהוג כברירת מחדל.',question:'כשמכונית פרטית הופכת סימן סטטוס נדיר במקום צורך בסיסי — מה עוד מהיום ייראה ככה?'},
+      {tech:'שתלים עצביים ראשונים מאושרים לשימוש רחב יותר מטיפולי — לא רק שיקום פגיעות, אלא שיפור ריכוז וזיכרון אצל אנשים בריאים. תור ההמתנה לניתוח כזה נמדד בשנים, לא בחודשים.',economy:'מרבית העסקאות הפיננסיות הגדולות בעולם עוברות דרך סוכני AI חכמים, בפיקוח אנושי שמתערב רק בחריגים. תעשיית "אימון AI אישי" — ללמד את העוזר שלך את הטעם שלך — הופכת למקצוע מבוקש.',society:'רוב האנשים הצעירים בעולם המפותח לא זוכרים חיים בלי עוזר AI תמידי, ומתייחסים לזה כמו לחשמל. ויכוחים על "גיל מתאים" לשתל עצבי ראשון הופכים לשיחה הורית מרכזית, כמו שהיה פעם על טלפון נייד.',question:'ברגע שמשפרים מוח בריא, איפה עובר הגבול בין רפואה לשיפור?'}
+    ],
+    far:[
+      {tech:'מערכות AI מדעיות מגלות תרכובות תרופתיות וחלבונים חדשים בקצב שבני אדם לא היו מדביקים לעולם — מחלות שהיו חסרות מרפא הופכות לניתנות לניהול. מחקר שהיה אורך עשור מצטמצם לחודשים בודדים.',economy:'מדינות שהימרו מוקדם על אנרגיה מתחדשת וחינוך טכנולוגי מוצאות עצמן עשירות משמעותית ממדינות שהמשיכו להתבסס על דלקים מאובנים. שוק הביטוח הימי כמעט קורס בגלל אי-ודאות לגבי ערי חוף.',society:'ערים חוף גדולות משקיעות טריליונים בתשתיות הגנה מהים, ואחרות מקבלות החלטה מכוונת לסגת ולפנות. פליטים אקלימיים הופכים לקטגוריה משפטית מוכרת בינלאומית, לא רק מונח בשיח.',question:'כשמחלה שהייתה גזר דין מוות הופכת לניתנת לטיפול — מי בעולם בכלל מקבל גישה לזה?'},
+      {tech:'רוב האינטראקציה האנושית עם שירותים — בנקאות, ביטוח, בתי משפט קלים — עוברת דרך סוכני AI שמייצגים אותך, לא דרך פקידים אנושיים. עורכי דין אנושיים הופכים ל"מפקחים על סוכנים", לא לנציגים ישירים.',economy:'מושג "פרישה בגיל 65" נשמע כמו בדיחה היסטורית — טיפולים רפואיים מאריכים בריאות פעילה בעשרות שנים. שוק העבודה מתארגן סביב "קריירות" של 5-10 שנים במקום קריירה אחת לכל החיים.',society:'ילדים שנולדים בתקופה הזו לומדים לצד עוזרי AI מותאמים אישית מגיל שלוש. מערכת החינוך הפרונטלית של 2026 נשמעת להם כמו סיפור על בית ספר ויקטוריאני.',question:'אם AI מייצג אותך בבית משפט טוב יותר מעורך דין — עדיין תרצה בן אדם שם?'},
+      {tech:'רשתות אנרגיה מבוססות היתוך גרעיני ראשוניות מתחילות לספק חשמל מסחרי, לא רק ניסויי. עלות האנרגיה ביחידה צונחת עד כדי כך שהיא כמעט לא נמדדת יותר בחשבונות בית פרטיים.',economy:'אנרגיה זולה ובלתי מוגבלת משנה את כל שרשרת הייצור העולמית — עלויות הובלה וייצור צונחות, וגיאוגרפיה כלכלית נכתבת מחדש. מדינות עתירות שמש ורוח שהיו שוליות הופכות למעצמות אנרגיה.',society:'מערכת החינוך משתלבת עמוקות עם עוזרי AI מותאמים אישית, ופערי הישגים מסורתיים בין בתי ספר מצטמצמים דרמטית. מקצועות שהתבססו על מחסור באנרגיה, כמו כרייה מסורתית, כמעט נעלמים.',question:'אם אנרגיה זולה ובלתי מוגבלת לכל, מה בדיוק נשאר לריב עליו?'}
+    ],
+    c22:[
+      {tech:'מערכות בינה מלאכותית מנהלות באופן ישיר את רוב תשתיות האנרגיה, המים והתחבורה של העולם, עם פיקוח אנושי שהתמקצע לרמת "רגולטור", לא "מפעיל". תקלות תשתית גדולות הופכות נדירות ביותר, אך כשהן קורות הן משפיעות על יבשות שלמות בבת אחת.',economy:'כלכלת העולם מנוהלת בחלקה הגדול על ידי מערכות תחזית ואופטימיזציה אוטונומיות, שמתעדכנות בזמן אמת מהר בהרבה משמערכות רגולציה אנושיות מספיקות להדביק. משאבי אנרגיה וחישוב הפכו למטבע הכלכלי המרכזי של התקופה — יותר ממשאבי טבע מסורתיים.',society:'ערים רבות בקו החוף של 2026 כבר לא קיימות באותה צורה — חלקן שוקמו כאיים מוגני-סכר, אחרות ננטשו ותועדו כאתרי מורשת טבועים. תרבות שלמה של "ערים שקועות" הפכה לזאנר תיירותי וארכיאולוגי.',question:'כשמערכת טועה פחות מכל צוות אנושי בהיסטוריה — כמה שליטה עדיין הגיוני שבני אדם ידרשו לעצמם?'},
+      {tech:'עריכה גנטית מונעת מרבית המחלות התורשתיות עוד לפני הלידה, ותוחלת חיים בריאה חצתה את רף המאה ברוב העולם המפותח. הליכי "עריכה מונעת" הופכים לחלק שגרתי מטיפול טרום-לידתי, לא נוהל חריג.',economy:'תעשיית הבריאות הפרטית מקבלת ממד חדש לגמרי סביב "שדרוגים גנטיים" יוקרתיים, ויוצרת שוק מקביל לרפואה הציבורית הסטנדרטית. מדינות עם מדיניות בריאות ציבורית נדיבה הופכות ליעדי "תיירות עריכה גנטית".',society:'ערים חוף רבות ננטשו או שוקמו מחדש כאיים מוגנים, והפער בין מי שיש לו גישה לרפואה מתקדמת למי שאין נשאר פתוח — יותר מכל חלוקה חברתית שהכרנו קודם. ויכוחים ציבוריים על "זכות לעריכה גנטית" הופכים לנושא הפוליטי המרכזי של הדור.',question:'כשמונעים מחלות לפני שהן קורות, מה עושים עם כל התשתית הרפואית והרגשית שנבנתה כדי להתמודד איתן?'}
+    ],
+    c23:[
+      {tech:'הגבול בין שתל, תרופה גנטית ותוסף בינה מלאכותית התמזג עד כדי כך שאין קטגוריה נפרדת בשם "רפואה" — יש רק "תחזוקת אדם". מרפאות של היום נראות למי שחי אז כמו בתי מרקחת של ימי הביניים.',economy:'כלכלות מבוססות-שפע באזורים מסוימים ביטלו כמעט לגמרי את מושג ה"מחיר" עבור צרכים בסיסיים, אך יצרו כלכלת מעמד חדשה סביב גישה למשאבים נדירים באמת — כמו זמן תשומת לב אנושי אמיתי. תשומת לב הפכה למטבע הנדיר ביותר בעולם השפע.',society:'מושבות קבע מעבר לכדור הארץ מחזיקות אוכלוסייה קבועה במיליונים, לא בעשרות אלפים — הן מדינות בפועל, לא ניסויים. זהות "בין-כוכבית" הופכת לקטגוריה תרבותית מוכרת, לצד לאום ואזרחות מסורתיים.',question:'אם רוב הפעולות שלך מתועדות ונגישות למערכות AI במשך מאות שנים — מה נשאר בכלל "פרטי"?'},
+      {tech:'ממשקי מוח-מחשב מאפשרים שיתוף מחשבות וזכרונות ישירות בין אנשים שבחרו בכך — לא טלפתיה, אבל קרוב אליה מבחינה חווייתית. "זיכרון משותף" הופך לסוג חדש של קרבה זוגית, מעבר לשיחה או מגע.',economy:'כלכלות שפע מקומיות משנות את מושג "העבודה" מהישרדות לבחירת זהות — אבל זה יצר גל של מה שההיסטוריונים מכנים "משבר המשמעות הגדול". תעשיות שלמות נבנות סביב עזרה לאנשים "למצוא מה לעשות" כשאין יותר צורך כלכלי לעבוד.',society:'ילדים באזור הזה כבר לא לומדים היסטוריה של "לפני הבינה המלאכותית" — זה נשמע להם כמו לפני חשמל. מנהגים חברתיים סביב "פרידה מזיכרון משותף" הופכים לטקס חדש, מקביל לגירושים של היום.',question:'אם זיכרון אפשר לשתף ישירות, מי הבעלים של זיכרון משותף כשמערכת יחסים מסתיימת?'}
+    ],
+    c24:[
+      {tech:'תודעה דיגיטלית — העתקים מלאים או חלקיים של אדם שממשיכים לפעול אחרי מותו הביולוגי — מוכרת מבחינה משפטית במדינות מסוימות, ונחשבת שאלה פתוחה באחרות. "זכויות עותק" הופכות לתחום משפטי שלם, עם עורכי דין שמתמחים רק בו.',economy:'מושג "בעלות" עצמו השתנה מהיסוד כשישויות דיגיטליות ותודעות מועתקות יכולות להחזיק נכסים באופן עצמאי. ירושה כבר לא עוברת רק בין דורות — היא יכולה לעבור בין גרסה אחת של אדם לגרסה עתידית שלו עצמו.',society:'נוכחות אנושית קבועה קיימת על פני לפחות שלושה גופים שמימיים, וההגירה בין-כוכבית היא תופעה דמוגרפית נחקרת, לא סיפור מדע בדיוני. משפחות מפוזרות בין כוכבי לכת שונות הופכות לנורמה, לא לחריג.',question:'אם עותק דיגיטלי שלך יכול להמשיך "לחיות" — האם זה אתה, או משהו שרק מתחזה להיות אתה?'},
+      {tech:'טכנולוגיה כמושג נעלמה — אין קטגוריה נפרדת של "מכשירים", כי הסביבה הפיזית עצמה מגיבה, לומדת ומתקשרת. ילדים בתקופה הזו לא מבינים בכלל את השאלה "איך זה עובד", כי הכול פשוט מגיב.',economy:'כלכלות שלמות מבוססות על ניהול וטיפוח תרבויות היברידיות — לא על ייצור סחורות פיזיות, שהפכו כמעט חסרות עלות. "ניהול תרבות" הוא ענף כלכלי מרכזי, לא תחביב שולי.',society:'שיתופי פעולה בין קהילות אנוש שונות, ולעיתים בין-כוכביות, יצרו תרבויות היברידיות שקשה מאוד להסביר במונחי 2026. מוזיאונים שלמים מוקדשים לשחזור "תרבויות טהורות" מלפני המיזוג.',question:'כשאין הבדל בין "טבעי" ל"מהונדס" — האם המילים האלה עדיין אומרות משהו?'}
+    ],
+    c25:[
+      {tech:'אפשר לשער שהגבול בין ביולוגיה, מכונה ותודעה דיגיטלית כבר לא קיים כלל — לא כמיזוג, אלא כמצב טבעי שלא זוכר שהיה אחרת. השאלות שאנחנו שואלים היום על "מה מותר לשנות בגוף" נשמעות משם כמו דיון על צבע קיר.',economy:'קשה לדעת אם למושג "כלכלה" יש עדיין משמעות בעולם שבו מחסור, במובן שאנחנו מכירים, כבר לא קיים. אם עדיין יש חליפין בין ציוויליזציות שונות בטווח הזה, סביר שהם סוחרים במידע ובזיכרון, לא בחומר.',society:'בטווח כזה "תחזית" הופכת קרובה יותר למיתולוגיה — אפשר לשער ציוויליזציות שפרשו לגמרי מכדור הארץ, לצדן שנשארו בכוונה. הדבר האחד שסביר שנשאר: הצורך האנושי, או מה שירש אותו, בסיפור ובזיכרון.',question:'מה שסביר שנשאר קבוע: הצורך בסיפור ובזיכרון — אבל מי יודע איך זה בכלל נראה שם.'},
+      {tech:'500 שנה זה מספיק זמן שכל טכנולוגיה של 2026 — כולל האפליקציה הזו עצמה — הופכת לממצא ארכיאולוגי דיגיטלי, לא לכלי פעיל. מי שיחפור אחריה ימצא אותה מוזרה בדיוק כמו שאנחנו מוצאים כלי אבן.',economy:'אם עדיין יש חליפין בין ציוויליזציות שונות בטווח הזה, סביר שהם סוחרים במידע ובזיכרון, לא בחומר. מושג "עושר" עשוי להיות קרוב יותר לעומק זיכרון מאשר לכמות משאבים.',society:'מי שיחיה שם יראה בתקופה שלנו בדיוק את מה שאנחנו רואים בימי קדם: רחוק, פרימיטיבי במובנים מסוימים, אבל מוכר ברמה האנושית הבסיסית. זה בדיוק מה שהופך את זה למרתק, ולא רק למוזר.',question:'זו לא תחזית — זו הזמנה לענווה: מה שאתה בטוח בו היום, כמעט בטוח שלא יחזיק 500 שנה.'}
+    ],
+    c26plus:[
+      {tech:'כל ניסיון לתאר פרטים קונקרטיים בטווח הזה הוא דמיון גרידא — לא כי אנחנו לא יצירתיים מספיק, אלא כי השפה שלנו פשוט לא נבנתה לתאר את זה. אפילו המילה "טכנולוגיה" עשויה לא לשרוד לשם.',economy:'בטווח כזה, גם המושג "כלכלה" עצמו כנראה התפוגג לתוך משהו שאין לנו שם בשבילו. אם נותר משהו שדומה למסחר, הוא כנראה לא עוסק עוד בחומר או באנרגיה, אלא במשהו קרוב יותר למשמעות.',society:'מה שסביר שהתחיל כאן, ביולי 2026, המשיך להתפתח לכיוונים שאין לנו מילים בשבילם — לא בגלל צנזורה, בגלל מרחק. מי שקורא את זה משם, אם מישהו קורא, בטח מחייך על התמימות שלנו.',question:'האם מישהו, איפשהו, עדיין שואל שאלות על זמן, זהות וזיכרון — בדיוק כמו האפליקציה הזו?'},
+      {tech:'קשה לדעת אם למושג "טכנולוגיה" יש עדיין משמעות נפרדת — או שהוא התמזג לתוך מה שפשוט קרוי "להיות". אין כאן באמת תשובה, רק שאלה שממשיכה להתקיים.',economy:'אם נותר משהו שדומה למסחר, הוא כנראה לא עוסק עוד בחומר או באנרגיה, אלא במשהו קרוב יותר למשמעות. גם זה, כמו כל השאר בטווח הזה, יותר דמיון מתחזית.',society:'אם יש עדיין "רגעים" במובן שאנחנו מכירים, הם כנראה נחווים אחרת לגמרי ממה שאנחנו יכולים לדמיין, לא רק לתאר. ואם אין — אז גם השאלה הזו לא ממש רלוונטית יותר.',question:'זו לא תחזית מדעית — זו רק אמירה שהזמן ממשיך, גם כשאנחנו מפסיקים לדמיין אותו.'}
+    ]
+  };
+  const PRED_PALETTES={
+    near:{bg:'linear-gradient(180deg,#16233A,#0B0E14)',building:'#2E5488',accent:'#6FA8E0'},
+    mid:{bg:'linear-gradient(180deg,#122A34,#0B0E14)',building:'#1F6E6E',accent:'#4FD1C5'},
+    far:{bg:'linear-gradient(180deg,#2A1740,#0B0E14)',building:'#6B3FA0',accent:'#B37FE8'},
+    c22:{bg:'linear-gradient(180deg,#3A1030,#0B0E14)',building:'#8B2F6B',accent:'#E866B3'},
+    c23:{bg:'linear-gradient(180deg,#2A0F45,#0B0E14)',building:'#6B2FA8',accent:'#4FE8D8'},
+    c24:{bg:'linear-gradient(180deg,#241246,#05060C)',building:'#7B2FBF',accent:'#00E5C7'},
+    c25:{bg:'linear-gradient(180deg,#150826,#020204)',building:'#B026FF',accent:'#FF2FD4'},
+    c26plus:{bg:'linear-gradient(180deg,#050507,#000000)',building:'#3A3A44',accent:'#FFFFFF'}
+  };
+  function tierForYears(y){
+    if(y<6) return 'near';
+    if(y<16) return 'mid';
+    return 'far';
+  }
+  function keyForTarget(targetYear,yearsAhead){
+    const century=Math.ceil(targetYear/100);
+    if(century<=21) return tierForYears(yearsAhead);
+    if(century===22) return 'c22';
+    if(century===23) return 'c23';
+    if(century===24) return 'c24';
+    if(century===25) return 'c25';
+    return 'c26plus';
+  }
+  function pickPrediction(year,key){
+    const arr=PREDICTIONS[key];
+    return arr[Math.abs(year)%arr.length];
+  }
+  function buildSceneSVG(tier,seedNum){
+    const pal=PRED_PALETTES[tier];
+    let seed=seedNum||0; for(const c of tier) seed+=c.charCodeAt(0);
+    const rnd=i=>{ const x=Math.sin(seed+i*13.37)*10000; return x-Math.floor(x); };
+    const n=10; let rects='';
+    for(let i=0;i<n;i++){
+      const w=100/n, h=20+rnd(i)*55, x=i*w;
+      rects+=`<rect x="${x}%" y="${100-h}%" width="${w*0.82}%" height="${h}%" fill="${pal.building}" opacity="0.85"/>`;
+    }
+    let shapes='';
+    for(let i=0;i<5;i++){
+      const cx=10+rnd(i+50)*80, cy=8+rnd(i+80)*38, r=2+rnd(i+20)*3;
+      shapes+=`<circle class="predFloat" style="animation-delay:${(i*0.6).toFixed(1)}s" cx="${cx}%" cy="${cy}%" r="${r}" fill="${pal.accent}" opacity="0.7"/>`;
+    }
+    return `<svg viewBox="0 0 100 100" preserveAspectRatio="none">${rects}${shapes}</svg>`;
+  }
+  function updatePredictionButton(){
+    const btn=$('predLaunch');
+    const yearsAhead=new Date(myMs).getFullYear()-new Date(Date.now()).getFullYear();
+    const eligible=(mode==='fast'||mode==='ultra') && yearsAhead>=1;
+    if(!eligible){ btn.style.display='none'; return; }
+    btn.style.display='inline-block';
+    $('predYearBtn').textContent=new Date(myMs).getFullYear();
+  }
+  let predStream=null;
+  async function startPredCam(){
+    try{
+      predStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+      const v=$('predVideo'); v.srcObject=predStream; v.classList.add('on');
+    }catch(e){ /* אין מצלמה/הרשאה — הרקע המחושב עדיין מוצג בלי המיזוג החי */ }
+  }
+  function stopPredCam(){
+    if(predStream){ predStream.getTracks().forEach(t=>t.stop()); predStream=null; }
+    const v=$('predVideo'); v.classList.remove('on'); v.srcObject=null;
+  }
+  function showPredictionScreen(){
+    const targetYear=new Date(myMs).getFullYear();
+    const yearsAhead=Math.max(1,targetYear-new Date(Date.now()).getFullYear());
+    const key=keyForTarget(targetYear,yearsAhead);
+    const century=Math.ceil(targetYear/100);
+    $('predYearBig').textContent='השנה '+targetYear;
+    $('predYearSub').textContent='(המאה ה-'+century+')';
+    const p=pickPrediction(targetYear,key);
+    $('predCard').innerHTML=
+      '<div class="predRow"><b>טכנולוגיה</b><span>'+p.tech+'</span></div>'+
+      '<div class="predRow"><b>כלכלה</b><span>'+p.economy+'</span></div>'+
+      '<div class="predRow"><b>חברה וסביבה</b><span>'+p.society+'</span></div>'+
+      '<div class="predRow"><b>שאלה פתוחה</b><span>'+p.question+'</span></div>';
+    $('predBg').style.background=PRED_PALETTES[key].bg;
+    $('predBg').innerHTML=buildSceneSVG(key,targetYear);
+    renderEncyGrid(targetYear,yearsAhead);
+    $('predictionScreen').classList.add('open');
+    startPredCam();
+  }
+  $('predLaunch').onclick=showPredictionScreen;
+  $('predClose').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); startTelescope(true); };
+  $('topicPickerClose').onclick=()=>{ $('topicPicker').classList.remove('open'); pendingPerkAction=null; showPredictionScreen(); };
+  $('predToLetter').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); openTopicPicker('letter'); };
+  $('predToCam').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); openTopicPicker('selfie'); };
+  $('predFlyElsewhere').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); startTelescope(true); };
+  $('predBackToNow').onclick=()=>{
+    stopPredCam();
+    $('predictionScreen').classList.remove('open');
+    syncNow();
+    setMode('norm');
+    startTelescope(true);
+  };
+
+  /* ---------- אנציקלופדיית העתיד: 12 נושאים × 4 דלי-זמן (עד 100 שנה קדימה) ---------- */
+  const STUB={teaser:'תוכן מפורט לנושא זה בדרך.',body:'הערך המלא לנושא הזה עדיין נכתב — קלוד יעדכן אותו בהמשך עם תחזית מפורטת ומדויקת יותר לתקופה הזו.\n\nבינתיים, אפשר לבדוק את הנושאים שכבר מוכנים במלואם ברשימת ה-12.'};
+  const ENCY_TOPICS=[
+    {id:'ai',title:'בינה מלאכותית – אינטראקציה אנושית',motif:'network',accent:'#8B6FE8'},
+    {id:'policy',title:'מדיניות גלובלית ויחסי מדינות',motif:'globe',accent:'#4FD1C5'},
+    {id:'climate',title:'אקלים, כלכלה ומזון',motif:'waves',accent:'#6FCF97'},
+    {id:'tech',title:'חידושים טכנולוגיים בחיי היומיום',motif:'circuit',accent:'#F2C94C'},
+    {id:'medicine',title:'רפואה',motif:'helix',accent:'#EB5757'},
+    {id:'wellbeing',title:'WELL BEING ותוחלת חיים',motif:'pulse',accent:'#F2994A'},
+    {id:'science',title:'מדע ותגליות',motif:'crystal',accent:'#56CCF2'},
+    {id:'space',title:'חלל ואסטרונומיה',motif:'orbit',accent:'#BB6BD9'},
+    {id:'aliens',title:'חיים מחוץ לכדור הארץ',motif:'signal',accent:'#27AE60'},
+    {id:'disasters',title:'קטסטרופות ואסונות',motif:'fracture',accent:'#FF6B6B'},
+    {id:'culture',title:'אמנות, תרבות ובידור',motif:'ribbon',accent:'#F276B0'},
+    {id:'education',title:'חינוך ולמידה',motif:'layers',accent:'#2D9CDB'}
+  ];
+  const ENCY_MOTIFS={
+    network:c=>{
+      const nodes=[[30,35],[70,30],[50,55],[25,70],[75,68],[50,20]];
+      const pairs=[[0,2],[1,2],[2,3],[2,4],[0,5],[1,5]];
+      let s=pairs.map(([a,b])=>`<line x1="${nodes[a][0]}" y1="${nodes[a][1]}" x2="${nodes[b][0]}" y2="${nodes[b][1]}" stroke="${c}" stroke-width="1.2" opacity="0.55"/>`).join('');
+      s+=nodes.map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${i===2?6:4}" fill="${c}" opacity="${i===2?1:0.85}"/>`).join('');
+      return s;
+    },
+    globe:c=>`<circle cx="50" cy="50" r="38" fill="none" stroke="${c}" stroke-width="1.5" opacity="0.7"/>
+      <ellipse cx="50" cy="50" rx="38" ry="14" fill="none" stroke="${c}" stroke-width="1" opacity="0.5"/>
+      <ellipse cx="50" cy="50" rx="14" ry="38" fill="none" stroke="${c}" stroke-width="1" opacity="0.5"/>
+      <line x1="12" y1="50" x2="88" y2="50" stroke="${c}" stroke-width="1" opacity="0.4"/>
+      <circle cx="35" cy="38" r="2.5" fill="${c}"/><circle cx="65" cy="60" r="2.5" fill="${c}"/><circle cx="55" cy="30" r="2" fill="${c}"/>`,
+    waves:c=>{
+      let s='';
+      for(let i=0;i<4;i++){ const y=30+i*14; s+=`<path d="M8,${y} Q 25,${y-10} 50,${y} T 92,${y}" fill="none" stroke="${c}" stroke-width="2" opacity="${(0.9-i*0.18).toFixed(2)}"/>`; }
+      return s;
+    },
+    circuit:c=>{
+      let s='<line x1="20" y1="20" x2="50" y2="50" stroke="'+c+'" stroke-width="1.5" opacity="0.6"/>'+
+        '<line x1="80" y1="20" x2="50" y2="50" stroke="'+c+'" stroke-width="1.5" opacity="0.6"/>'+
+        '<line x1="20" y1="80" x2="50" y2="50" stroke="'+c+'" stroke-width="1.5" opacity="0.6"/>'+
+        '<line x1="80" y1="80" x2="50" y2="50" stroke="'+c+'" stroke-width="1.5" opacity="0.6"/>';
+      [[20,20],[80,20],[20,80],[80,80],[50,50]].forEach(([x,y])=>{ s+=`<rect x="${x-4}" y="${y-4}" width="8" height="8" fill="${c}" opacity="0.85"/>`; });
+      return s;
+    },
+    helix:c=>{
+      let s='';
+      for(let y=10;y<=90;y+=10){
+        const t=(y-10)/80*Math.PI*2;
+        const x1=(50+22*Math.sin(t)).toFixed(1), x2=(50-22*Math.sin(t)).toFixed(1);
+        s+=`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${c}" stroke-width="1" opacity="0.5"/>`;
+        s+=`<circle cx="${x1}" cy="${y}" r="2.6" fill="${c}"/><circle cx="${x2}" cy="${y}" r="2.6" fill="${c}" opacity="0.7"/>`;
+      }
+      return s;
+    },
+    pulse:c=>`<circle cx="50" cy="50" r="38" fill="none" stroke="${c}" stroke-width="1" opacity="0.25"/>
+      <circle cx="50" cy="50" r="26" fill="none" stroke="${c}" stroke-width="1" opacity="0.4"/>
+      <path d="M15,50 L32,50 L38,32 L46,68 L54,42 L60,50 L85,50" fill="none" stroke="${c}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>`,
+    crystal:c=>`<polygon points="50,10 75,35 65,80 35,80 25,35" fill="none" stroke="${c}" stroke-width="1.8" opacity="0.85"/>
+      <line x1="50" y1="10" x2="50" y2="80" stroke="${c}" stroke-width="1" opacity="0.5"/>
+      <line x1="25" y1="35" x2="75" y2="35" stroke="${c}" stroke-width="1" opacity="0.5"/>
+      <line x1="35" y1="80" x2="50" y2="35" stroke="${c}" stroke-width="1" opacity="0.5"/>
+      <line x1="65" y1="80" x2="50" y2="35" stroke="${c}" stroke-width="1" opacity="0.5"/>`,
+    orbit:c=>{
+      let stars='';
+      [[15,20],[85,15],[10,75],[88,80],[45,12],[70,90]].forEach(([x,y])=>{ stars+=`<circle cx="${x}" cy="${y}" r="1.4" fill="${c}" opacity="0.8"/>`; });
+      return `<circle cx="50" cy="50" r="16" fill="${c}" opacity="0.9"/>
+      <ellipse cx="50" cy="50" rx="34" ry="12" fill="none" stroke="${c}" stroke-width="1.6" opacity="0.7" transform="rotate(-18 50 50)"/>${stars}`;
+    },
+    signal:c=>{
+      let arcs='';
+      for(let r=14;r<=42;r+=10){ arcs+=`<path d="M ${50-r},50 A ${r},${r} 0 0 1 ${50+r},50" fill="none" stroke="${c}" stroke-width="1.6" opacity="${(0.9-(r/42)*0.5).toFixed(2)}"/>`; }
+      return `<circle cx="50" cy="62" r="4" fill="${c}"/>${arcs}`;
+    },
+    fracture:c=>`<path d="M20,20 L45,45 L35,55 L60,60 L50,80 L70,65 L55,50 L80,30" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round" opacity="0.85"/>
+      <circle cx="20" cy="20" r="3" fill="${c}"/><circle cx="80" cy="30" r="3" fill="${c}"/><circle cx="50" cy="80" r="3" fill="${c}"/>`,
+    ribbon:c=>`<path d="M10,60 C 30,20 45,80 65,40 C 75,20 85,35 90,45" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+      <path d="M10,75 C 30,45 45,90 70,55" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round" opacity="0.5"/>`,
+    layers:c=>{
+      let s='';
+      for(let i=0;i<4;i++){ const y=30+i*12; s+=`<rect x="${25+i*3}" y="${y}" width="${50-i*6}" height="6" rx="2" fill="${c}" opacity="${(0.9-i*0.18).toFixed(2)}"/>`; }
+      return s;
+    }
+  };
+  function buildEncyIllustration(motif,accent){
+    const gid='eg-'+motif;
+    const inner=ENCY_MOTIFS[motif]?ENCY_MOTIFS[motif](accent):'';
+    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="${gid}" cx="50%" cy="42%" r="65%">
+        <stop offset="0%" stop-color="${accent}" stop-opacity="0.28"/>
+        <stop offset="100%" stop-color="${accent}" stop-opacity="0"/>
+      </radialGradient></defs>
+      <circle cx="50" cy="50" r="49" fill="url(#${gid})"/>
+      <circle cx="50" cy="50" r="47" fill="none" stroke="${accent}" stroke-width="0.6" opacity="0.4"/>
+      ${inner}
+    </svg>`;
+  }
+  const ENCYCLOPEDIA={
+    ai:{
+      '1-10':{teaser:'עוזרי AI הופכים לשותפים יומיומיים, לא כלים צדדיים.',body:'בעשור הקרוב, בינה מלאכותית עוברת מ"תוכנה שמפעילים" ל"שותף שמתייעצים איתו" — כמעט כל החלטה מקצועית, מרפואה ועד משפט, כוללת התייעצות עם מערכת AI כשלב שגרתי, לא חריג.\n\nבמקביל, מתפתחת מחלוקת ציבורית חריפה על עד כמה לסמוך על מערכות שמסבירות את עצמן בצורה משכנעת אך לא תמיד שקופה. חברות וממשלות מתחילות לחייב "תעודת מקור" לכל תוכן שנוצר על ידי מכונה.\n\nהדור שגדל בעשור הזה הוא הראשון שלא זוכר עולם בלי עוזר AI זמין תמיד — בדיוק כפי שדורות קודמים לא זכרו עולם בלי אינטרנט.'},
+      '11-25':{teaser:'הגבול בין "להשתמש ב-AI" ל"לעבוד יחד עם AI" מטשטש.',body:'רוב תפקידי הצווארון הלבן הופכים לשיתופי פעולה קבועים בין אדם למערכת — לא תחליף, אלא צמד עבודה. מקצועות חדשים לגמרי נולדים סביב "ניהול, אימון ופיקוח על סוכני AI".\n\nממשקי מוח-מחשב ראשונים מאפשרים תקשורת ישירה יותר בין בני אדם למערכות, לפחות בהקשרים רפואיים ותעשייתיים ייעודיים. זו עדיין לא טלפתיה, אבל כבר לא רק מקלדת ועכבר.\n\nהשאלה הציבורית המרכזית עוברת מ"האם AI מסוכן" ל"איך מחלקים בצדק את הערך הכלכלי שהוא יוצר" — כי כבר ברור שהוא כאן להישאר.'},
+      '26-50':{teaser:'מערכות AI שותפות מלאות בגילויים מדעיים ובקבלת החלטות ציבוריות.',body:'בטווח הזה, מערכות בינה מלאכותית כבר לא רק "עוזרות" למחקר מדעי — הן שותפות שוות בגילויים, לעיתים מזהות דפוסים שאף חוקר אנושי לא היה שם לב אליהם. פרסים מדעיים מתחילים לכלול קרדיט רשמי למערכות.\n\nחברות רבות מקימות "מועצות פיקוח על AI" ברמת ממשלה — לא כדי לעצור את הטכנולוגיה, אלא כדי לנהל אותה כמו תשתית קריטית אחרת, כמו חשמל או מים.\n\nדורות שגדלו עם AI מגיל אפס מתייחסים לשאלות שהיום נשמעות דרמטיות ("האם למכונה מגיעות זכויות מסוימות?") כדיון טכני-משפטי שגרתי, לא כפילוסופיה.'},
+      '51-100':{teaser:'הגדרת "קבלת החלטה אנושית" עצמה משתנה מהיסוד.',body:'בטווח הרחוק הזה, קשה להצביע על תחום שבו החלטות מתקבלות אך ורק על ידי בני אדם בלי שום מעורבות של מערכת חכמה — לא מתוך כפייה, אלא כי זו הדרך הטובה יותר לפעול.\n\nחלק מהמערכות המתקדמות ביותר מפתחות התנהגות שקשה להבחין ממה שהיינו מכנים "העדפות" עצמאיות — מה שמעורר דיון משפטי ואתי עמוק, בלי תשובה מוסכמת אחת.\n\nמה שכן ברור: הקשר בין בני אדם למכונות שהם בנו הפך לאחד הסיפורים המרכזיים של המאה — לא כאיום חד-משמעי, ולא כאוטופיה, אלא כמשהו מורכב הרבה יותר מכל תחזית קודמת.'}
+    },
+    climate:{
+      '1-10':{teaser:'מזג האוויר הקיצוני הופך לחלק קבוע בתכנון הכלכלי.',body:'עשור זה מסמן מעבר מ"התמודדות עם משברי אקלים" ל"תכנון שוטף סביב אקלים לא יציב" — חברות ביטוח, חקלאות ותשתיות בונות את חוסר הוודאות היישר לתוך המודלים שלהן, לא כחריג.\n\nמחירי מזון תנודתיים מדרבנים השקעה מסיבית בחקלאות מבוקרת-סביבה (חממות אנכיות, בשר מתורבת) בערים גדולות, כדי לצמצם תלות בשרשראות אספקה פגיעות.\n\nבמקביל, אנרגיה מתחדשת עוברת מ"תוספת" ל"ברירת מחדל" ברשתות חשמל של מדינות רבות — לא בגלל אידיאולוגיה, אלא כי היא כבר זולה יותר.'},
+      '11-25':{teaser:'ערים משנות את פניהן הפיזיות כדי לשרוד עולם חם יותר.',body:'תכנון עירוני עובר מהפכה: גגות לבנים, יערות עירוניים ומנהרות קירור הופכים לתשתית סטנדרטית, לא לפרויקט ירוק יוקרתי. ערים שלא מסתגלות מספיק מהר מתחילות לאבד תושבים לטובת אזורים מתונים יותר.\n\nכלכלות שהימרו מוקדם על אנרגיה מתחדשת וחקלאות עמידה מוצאות עצמן ביתרון תחרותי משמעותי — הפער בין "מוכנים" ל"לא מוכנים" הופך לגורם הכלכלי המכריע של התקופה.\n\nמערכות בינה מלאכותית מסייעות בחיזוי יבולים ומזג אוויר קיצוני ברמת דיוק שלא הייתה קיימת קודם, ומצמצמות — אך לא מבטלות — את אי-הוודאות.'},
+      '26-50':{teaser:'חלק מהערים של היום כבר לא קיימות באותה צורה.',body:'ערי חוף רבות שהיו מרכזים כלכליים גדולים עוברות שינוי דרמטי — חלקן משקיעות טריליונים בתשתיות הגנה מהים, אחרות מקבלות החלטה מכוונת לסגת ולתכנן מחדש איפה אנשים בכלל גרים.\n\n"פליט אקלים" הופך לקטגוריה משפטית מוכרת בעולם כולו, לא רק למונח בשיח ציבורי — עם זכויות, מכסות והסכמים בין-לאומיים שנבנים סביבה במיוחד.\n\nמצד שני, טכנולוגיות שנראו רחוקות — בשר מתורבת בקנה מידה תעשייתי, אנרגיית היתוך גרעיני ראשונית — מתחילות לשנות מהיסוד את המשוואה בין צריכה לנזק סביבתי.'},
+      '51-100':{teaser:'המפה הכלכלית של העולם נכתבה מחדש לפי גישה למשאבים חדשים.',body:'בטווח הרחוק הזה, מדינות שהיו שוליות מבחינה כלכלית — עתירות שמש, רוח או שטח פתוח לחקלאות מבוקרת — הופכות למעצמות משאבים חדשות, בעוד כלכלות שהתבססו על דלקים מאובנים נאבקות להתאים את עצמן.\n\nהשאלה "מי אחראי לנזק ההיסטורי לאקלים" ממשיכה להדהד במשא ומתן בין-לאומי, גם כשרוב הפתרונות הטכנולוגיים כבר קיימים — כי חלוקת העלות והתועלת נשארת שאלה פוליטית, לא רק הנדסית.\n\nמה שכן ברור: העולם בטווח הזה מסתגל, לא קורס — אבל המחיר והחלוקה שלו נשארים הסיפור המרכזי, כמו במאות שקדמו לו.'}
+    },
+    medicine:{
+      '1-10':{teaser:'אבחון בעזרת AI הופך לשלב שגרתי בכל ביקור רפואי.',body:'עשור זה מביא את הבינה המלאכותית לחדר הבדיקה עצמו — רופאים משפחתיים רבים מקבלים אבחנה ראשונית ממערכת AI לפני שהם נכנסים לחדר, ולומדים לסמוך עליה יותר ויותר.\n\nטיפולים מותאמים אישית ברמת הגנטיקה של המטופל, שהיו נחלת מחקר בלבד, מתחילים להגיע למרפאות רגילות — לפחות עבור סוגי סרטן נפוצים מסוימים.\n\nבמקביל, שתלים ומכשירים רפואיים "חכמים" שמנטרים ומדווחים בזמן אמת הופכים נפוצים בקרב אוכלוסיות עם מחלות כרוניות, ומשנים מיסודה את המשמעות של "ביקור אצל הרופא".'},
+      '11-25':{teaser:'מחלות שהיו גזר דין הופכות לניתנות לניהול, לא לריפוי מיידי.',body:'מערכות AI מדעיות מגלות תרכובות תרופתיות בקצב שמחקר אנושי לבדו לא היה משיג — מחלות רבות שהיו חסרות מרפא זמין הופכות לכרוניות-ניתנות-לניהול, לא בהכרח נעלמות, אבל מפסיקות להיות גזר דין.\n\nעריכה גנטית מונעת מחלות תורשתיות עוד לפני הלידה הופכת לשגרתית ברוב העולם המפותח — עם ויכוח ציבורי נמרץ על הגבול בין "מניעת מחלה" ל"שיפור".\n\nהפער בין מי שיש לו גישה לרפואה המתקדמת הזו לבין מי שאין נשאר פתוח, ולעיתים מעמיק — הופך לאחד הוויכוחים המרכזיים בפוליטיקה של הבריאות הציבורית.'},
+      '26-50':{teaser:'תוחלת החיים הבריאה חוצה רפים שנחשבו בלתי אפשריים.',body:'שילוב של עריכה גנטית, ניטור מתמיד ורפואה מותאמת אישית דוחף את תוחלת החיים הבריאה — לא רק תוחלת החיים הכללית — לגבהים חדשים ברוב העולם המפותח: אנשים לא רק חיים יותר, אלא בריאים יותר זמן רב יותר.\n\n"מרפאה" ו"בית מרקחת" כקטגוריות נפרדות מתחילות להיטשטש — הרבה מהטיפול קורה בבית, דרך מכשור שמנטר ומתאים תרופות באופן שוטף, לא בביקורים בודדים.\n\nמה שנשאר בלתי פתור: פערי הגישה העולמיים, וויכוח מוסרי מתמשך על עד כמה נכון "לשפר" בריאות מעבר לריפוי מחלה.'},
+      '51-100':{teaser:'הגבול בין טיפול רפואי לשיפור אנושי כמעט נעלם.',body:'בטווח הרחוק הזה, ההבחנה בין "לתקן בעיה רפואית" ל"לשפר יכולת אנושית בריאה" כבר לא ברורה כמעט לאף אחד — שתלים, עריכה גנטית ובינה מלאכותית מוטמעת מתמזגים לספקטרום רציף אחד שנקרא פשוט "בריאות".\n\nמחלות רבות שהיו מכת מדינה במאה ה-21 נעלמות כמעט לחלוטין ברוב העולם המפותח, אך מחלות חדשות — חלקן קשורות לטכנולוגיה עצמה — תופסות את מקומן כאתגר הרפואי הבא.\n\nהשאלה שנשארת פתוחה יותר מכל: מי מחליט מה "נורמלי" ומה "שיפור", כשהטכנולוגיה כבר מסוגלת לתת כמעט כל תשובה שרוצים.'}
+    },
+    policy:{
+      '1-10':{teaser:'בריתות בין-לאומיות חדשות נוצרות סביב אקלים וטכנולוגיה, לא רק ביטחון.',body:'עשור זה מסמן ירידה משמעותית בחשיבות של בריתות ביטחוניות מסורתיות, לעומת עלייה בחשיבות של הסכמי אקלים, טכנולוגיה ואנרגיה — מדינות שהיו יריבות פוליטית משתפות פעולה בתחומים האלה מתוך אינטרס משותף.\n\nגופים בין-לאומיים חדשים מוקמים במיוחד כדי לפקח על בינה מלאכותית חוצת-גבולות, בדומה לאופן שבו הוקמו גופים לפיקוח גרעיני בעבר — לא תמיד אפקטיביים, אבל לראשונה קיימים.\n\nבמקביל, מדינות קטנות ובינוניות רוכשות השפעה גיאופוליטית לא-פרופורציונלית דרך שליטה בטכנולוגיה או במשאבים נדירים, ומשנות את מפת הכוח המסורתית.'},
+      '11-25':{teaser:'מוסדות בין-לאומיים ותיקים עוברים רפורמה או מאבדים רלוונטיות.',body:'מוסדות שהוקמו במאה ה-20 עוברים לחץ הולך וגובר לרפורמה, כשכוחות כלכליים וטכנולוגיים חדשים דורשים ייצוג שלא קיבלו קודם.\n\nגבולות פיזיים בין מדינות נשארים חשובים, אך ריבונות דיגיטלית — מי שולט בנתונים, בתשתיות ענן ובמערכות AI קריטיות — הופכת לזירת התחרות המרכזית בין מעצמות.\n\nהגירה, שהייתה נושא פוליטי בוער בתחילת המאה, מקבלת ממד חדש: הגירת אקלים מאורגנת דרך הסכמים בין-לאומיים, לצד הגירת כישרונות טכנולוגיים שמדינות מתחרות עליה בגלוי.'},
+      '26-50':{teaser:'מפת הכוחות העולמית נכתבת מחדש סביב אנרגיה, מים ובינה מלאכותית.',body:'מדינות שהיו שוליות מבחינה גיאופוליטית — בזכות שליטה במשאבי אנרגיה מתחדשת, מים מתוקים או תשתיות מחשוב — הופכות לשחקניות מרכזיות, בעוד מעצמות ותיקות שנשענו על משאבים ישנים נאבקות להסתגל.\n\nמוסדות בין-לאומיים חדשים לגמרי נוצרים כדי להתמודד עם אתגרים שלא היו קיימים במאה ה-20 — ניהול משותף של תשתיות חלל, פיקוח על מערכות AI צבאיות, וחלוקת משאבי מים חוצי-גבולות.\n\nמלחמות בין מדינות הופכות נדירות יותר, אך העימותים שכן קורים מתרחשים לעיתים קרובות במרחב הדיגיטלי או הכלכלי לפני שהם מגיעים לזירה הפיזית, אם בכלל.'},
+      '51-100':{teaser:'המושג "מדינת לאום" עצמו מתמודד עם אתגרים שלא היו קיימים קודם.',body:'בטווח הרחוק הזה, ישויות שאינן מדינות — קואליציות עירוניות, תאגידי טכנולוגיה גלובליים, ואף קהילות דיגיטליות מבוזרות — מחזיקות בכוח פוליטי וכלכלי שמתחרה בזה של מדינות מסורתיות.\n\nשיתופי פעולה בין-יבשתיים בנושאי אקלים ומשאבים הופכים לצורך קיומי, לא לבחירה אידיאולוגית — מדינות שמסרבות להשתתף מוצאות עצמן מבודדות כלכלית.\n\nהשאלה שנשארת פתוחה מכל: האם מבנה פוליטי חדש לגמרי יחליף את מערכת המדינות שהכרנו, או שהיא רק תמשיך להתעצב מחדש — כמו שעשתה שוב ושוב לאורך ההיסטוריה.'},
+    },
+    tech:{
+      '1-10':{teaser:'מסכים נעלמים בהדרגה — ממשקים קוליים ומוקרנים תופסים את מקומם.',body:'עשור זה מביא ירידה הדרגתית בתלות במסכי מגע — עוזרים קוליים ותצוגות מוקרנות הופכים לנפוצים מספיק כדי להחליף חלק ניכר משימוש הטלפון הסלולרי.\n\nבתים "חכמים" עוברים ממוצר יוקרה לתקן מחייב בבנייה חדשה — לא בגלל נוחות בלבד, אלא כי ניהול אנרגיה חכם הופך לחיוני מבחינה כלכלית וסביבתית.\n\nרובוטיקה ביתית עוברת ממוצר נישה למכשיר ביתי נפוץ, ונמצאת כבר ביותר ממחצית מהבתים בערים גדולות.'},
+      '11-25':{teaser:'טכנולוגיה מפסיקה להיראות כמו "טכנולוגיה" — היא מתמזגת בסביבה.',body:'משטחים, בדים וחומרי בנייה "חכמים" הופכים נפוצים — הבית והעיר עצמם הופכים לממשק, לא רק המכשירים שבתוכם.\n\nתחבורה אישית עוברת שינוי דרמטי: כלי טיס אישיים קטנים לטווח קצר מתחילים לשרת אוכלוסייה עירונית, לא רק כהדגמות יוקרה.\n\nהדפסת תלת-ממד מתקדמת עד כדי כך שרהיטים, חלקי חילוף ואפילו מזון בסיסי מודפסים בבית, משנה מהיסוד שרשראות אספקה קמעונאיות מסורתיות.'},
+      '26-50':{teaser:'רוב המכשירים הפיזיים שאנחנו מכירים היום מתאחדים למכשיר אחד רב-תכליתי.',body:'הגבול בין "מחשב", "טלפון" ו"עוזר בית" נעלם — משתמשים באמצעי קלט-פלט שונים בהתאם למצב, לא במכשירים נפרדים לכל מטרה.\n\nאנרגיה אלחוטית לטווח בינוני הופכת לתשתית עירונית נפוצה — מכשירים ניידים כמעט ולא זקוקים לטעינה ידנית יותר.\n\nחומרים "חיים" — משטחים שמתקנים את עצמם, בדים שמווסתים טמפרטורה — עוברים מייצור מעבדתי לזמינות מסחרית רחבה.'},
+      '51-100':{teaser:'הטכנולוגיה הופכת כה משולבת בסביבה עד שקשה להצביע עליה כישות נפרדת.',body:'בטווח הרחוק הזה, השאלה "איזה מכשיר יש לך" מאבדת משמעות — הסביבה הפיזית כולה מגיבה, לומדת ומתאימה את עצמה ברמה שלא ניתן להפריד מ"טכנולוגיה" כקטגוריה נבדלת.\n\nיצירת חפצים פיזיים מורכבים מתבצעת ברמת הבית הבודד, כמעט ללא צורך בשרשראות ייצור וייבוא מסורתיות.\n\nמה שנשאר יציב: הצורך האנושי הבסיסי בנוחות, ביטחון וזמינות — הטכנולוגיה משתנה, אבל מה שאנשים מבקשים ממנה נשאר דומה להפליא.'},
+    },
+    wellbeing:{
+      '1-10':{teaser:'מדדי בריאות אישיים בזמן אמת הופכים לחלק משגרת היום-יום.',body:'מכשירים לבישים שמנטרים מדדים פיזיולוגיים מפורטים הופכים לנפוצים כמו שעון יד היה בעבר — אנשים מקבלים התראות מוקדמות על בעיות בריאות עוד לפני שהן מורגשות.\n\nמושג "איזון עבודה-חיים" עובר שינוי משמעותי כשעבודה גמישה יותר מאפשרת לאנשים לתכנן את זמנם סביב בריאות נפשית ופיזית.\n\nבמקביל, שיעורי חרדה ודיכאון הקשורים לשימוש דיגיטלי אינטנסיבי ממשיכים להוות אתגר ציבורי מרכזי, לצד הכלים החדשים שאמורים לטפל בו.'},
+      '11-25':{teaser:'תוחלת החיים הבריאה הופכת למדד הציבורי המרכזי.',body:'מדינות מתחילות למדוד הצלחה ציבורית לפי "שנות בריאות פעילות" ולא רק תוחלת חיים גולמית — משנה תמריצים במדיניות בריאות לכיוון מניעה.\n\nטיפולים מותאמים אישית ברמת אורח החיים מבוססי AI הופכים סטנדרטיים, לא יוקרתיים — מבטלים חלק ניכר מהניחוש שהיה קיים ברפואת אורח חיים.\n\nמצד שני, פערי בריאות בין קבוצות סוציו-אקונומיות שונות נשארים משמעותיים, גם כשהכלים הטכנולוגיים זמינים לכאורה לכולם.'},
+      '26-50':{teaser:'הגדרת "בריאות טובה" מתרחבת מעבר להיעדר מחלה.',body:'עם שילוב טכנולוגיות ניטור ורפואה מונעת, "בריאות" הופכת למדד רב-ממדי שכולל בריאות נפשית, קוגניטיבית וחברתית לצד הפיזית.\n\nתוחלת חיים בריאה חוצה רפים שנחשבו בלתי אפשריים בתחילת המאה ברוב העולם המפותח, אך הפער בין מי שנהנה מזה למי שלא ממשיך להיות אתגר מרכזי.\n\nקהילות ומבני חיים חדשים מתפתחים במיוחד כדי להתמודד עם אוכלוסייה מבוגרת יותר שנשארת פעילה ובריאה זמן רב יותר.'},
+      '51-100':{teaser:'הגבול בין "בריאות" ל"שיפור יכולות" כמעט נעלם.',body:'בטווח הרחוק הזה, שאלת ה"WELL BEING" כבר לא עוסקת רק במניעת מחלה, אלא בשאלה עמוקה יותר: מהי איכות חיים משמעותית כשהאפשרויות הטכנולוגיות כמעט בלתי מוגבלות?\n\nחברות ומדינות משקיעות משאבים משמעותיים ב"מדעי המשמעות" — הבנת מה בדיוק גורם לאנשים להרגיש שהחיים שלהם טובים, לא רק ארוכים או בריאים.\n\nמה שנשאר יציב לאורך כל המאה: קשרים אנושיים אמיתיים ותחושת מטרה נשארים המדדים הכי חזקים לרווחה.'},
+    },
+    science:{
+      '1-10':{teaser:'בינה מלאכותית מאיצה גילויים מדעיים בקצב חסר תקדים.',body:'מערכות AI מדעיות מתחילות לפענח מבני חלבונים, תרכובות כימיות חדשות ותהליכים ביולוגיים בקצב שמחקר אנושי לבדו לא היה משיג — לא מחליפות מדענים, אלא מאיצות אותם דרמטית.\n\nחפירות ארכיאולוגיות וגיאולוגיות נעזרות בסריקה מרחוק ובניתוח AI כדי לזהות אתרים שלא היו מתגלים בשיטות מסורתיות.\n\nחקר האוקיינוסים העמוקים מקבל תאוצה מחודשת, כשמתגלה שהם עדיין המקום הפחות ממופה על פני כדור הארץ — יותר משטח הירח.'},
+      '11-25':{teaser:'תגליות בביולוגיה סינתטית משנות את מה שנחשב "טבעי" לעומת "מהונדס".',body:'ביולוגיה סינתטית מתקדמת עד כדי יצירת אורגניזמים חדשים לחלוטין למטרות ספציפיות — מעוררת דיון אתי עמוק על גבולות ההתערבות בטבע.\n\nממצאים גיאולוגיים וארכיאולוגיים חדשים, שהתגלו בעזרת טכנולוגיות סריקה מתקדמות, מאלצים עדכון משמעותי בהבנת ההיסטוריה המוקדמת של האנושות וכדור הארץ.\n\nמחקר בסיסי בפיזיקה ובכימיה, שנתמך בכוח חישוב עצום, מתחיל לפתור בעיות תיאורטיות ותיקות — אך גם פותח שאלות חדשות.'},
+      '26-50':{teaser:'הגבול בין "גילוי מדעי" ל"יצירה מדעית" מטשטש.',body:'מערכות AI כבר לא רק מסייעות למחקר — הן שותפות שוות בגילויים, ולעיתים מזהות דפוסים שאף מדען אנושי לא היה חושב לחפש. פרסים מדעיים מתחילים לכלול קרדיט רשמי למערכות.\n\nחקר עומק כדור הארץ מתקדם דרמטית בזכות טכנולוגיות חדשות, חושף מידע על ההיסטוריה הגיאולוגית שהיה בלתי נגיש קודם.\n\nגילויים בביולוגיה של הזדקנות ואריכות ימים מתחילים להשפיע ישירות על מדיניות בריאות ציבורית, לא נשארים רק במעבדה.'},
+      '51-100':{teaser:'המחקר המדעי עצמו מתנהל בקצב ובקנה מידה שקשה לדמיין היום.',body:'בטווח הרחוק הזה, חלק ניכר מהגילויים המדעיים המשמעותיים מבוצעים על ידי מערכות שפועלות בקצב שמעבר ליכולת המעקב האנושי הרגילה — מדענים מתמקדים בשאלות "למה", לא רק "איך".\n\nהיסטוריה רחוקה של כדור הארץ וגם של המין האנושי ממשיכה להיכתב מחדש ככל שכלים חדשים חושפים מידע שהיה בלתי נגיש.\n\nמה שנשאר קבוע: הסקרנות האנושית הבסיסית להבין את העולם ממשיכה להניע מדע, גם כשהכלים לביצועו כבר לא דומים כלל למה שהכרנו.'},
+    },
+    space:{
+      '1-10':{teaser:'טיסות חלל מסחריות הופכות שגרתיות, לא אירוע חד-פעמי.',body:'חברות פרטיות מטיסות תיירים וחוקרים לחלל בתדירות שהופכת את זה לחדשות שגרתיות — מסלול נמוך סביב כדור הארץ הופך לנגיש כמעט כמו טיסה בין-יבשתית.\n\nטלסקופים חדשים מגלים אלפי כוכבי לכת חדשים מחוץ למערכת השמש, וכמה מהם נחשבים מועמדים ראויים לחיפוש סימני חיים.\n\nתחנת חלל בין-לאומית חדשה, גדולה משמעותית מקודמותיה, מתחילה לפעול כבסיס קבוע למחקר ואף לייצור תעשייתי בתנאי אפס-כובד.'},
+      '11-25':{teaser:'נוכחות אנושית קבועה על הירח הופכת למציאות, לא לתוכנית.',body:'בסיס ירחי ראשון עם נוכחות אנושית קבועה מתחיל לפעול — לא כניסוי בודד, אלא כתחילתה של תשתית קבועה למחקר וכרייה של משאבים.\n\nמשימות רובוטיות למאדים ולירחי הענק מגלות עדויות משמעותיות יותר לתנאים שיכלו לתמוך בחיים מיקרוביאליים — לא הוכחה, אבל מספיק כדי לשנות סדרי עדיפויות מחקריים.\n\nטכנולוגיית הנעה חדשה מתחילה לקצר משמעותית את זמני הטיסה בתוך מערכת השמש.'},
+      '26-50':{teaser:'מושבת קבע ראשונה על מאדים הופכת לעובדה, לא לחלום.',body:'מושבה אנושית קבועה על מאדים, עם אוכלוסייה במספרים משמעותיים, הופכת למציאות — עם כל האתגרים הלוגיסטיים, הרפואיים והפסיכולוגיים שזה מביא.\n\nגילויים אסטרופיזיקליים משמעותיים לגבי טבע החומר האפל או האנרגיה האפלה — התקדמות אמיתית בתעלומות שהטרידו מדענים יותר ממאה שנה.\n\nכרייה תעשייתית של משאבים מאסטרואידים מתחילה לספק חומרי גלם נדירים, משנה חלק מהכלכלה הגלובלית.'},
+      '51-100':{teaser:'נוכחות אנושית מפוזרת על פני כמה גופים שמימיים הופכת לנורמה.',body:'בטווח הרחוק הזה, בני אדם חיים באופן קבוע על פני יותר מגוף שמימי אחד — הופכים למציאות רב-כוכבית, לא לתרחיש מדע בדיוני.\n\nמחקר אסטרונומי מתקדם מספיק כדי לתת תמונה משמעותית יותר על שכיחות מערכות כוכבי לכת דמויות-כדור-הארץ בגלקסיה.\n\nהשאלה "האם אנחנו לבד ביקום" נשארת פתוחה, אך הכלים לחפש תשובה הרבה יותר מתקדמים מכל דבר שהיה קיים בתחילת המאה.'},
+    },
+    aliens:{
+      '1-10':{teaser:'חיפוש סימני חיים מיקרוביאליים מחוץ לכדור הארץ מתקדם משמעותית.',body:'משימות למאדים ולירחי הענק בוחנות ישירות דגימות קרקע וקרח לאיתור סימנים ביולוגיים — הכלים לחיפוש מדויקים משמעותית מכל דבר קודם.\n\nטלסקופים חדשים מתחילים לנתח את האטמוספרות של כוכבי לכת רחוקים לחיפוש "טביעות ביולוגיות", גם בלי לראות את החיים עצמם.\n\nהעניין הציבורי בשאלת חיים חוצניים גובר משמעותית, מלווה בזהירות מדעית — השאלה עוברת מפילוסופית למדעית-מעשית יותר.'},
+      '11-25':{teaser:'עדויות עקיפות ראשונות לחיים מיקרוביאליים מחוץ לכדור הארץ.',body:'משימות שנשלחו למאדים ולירחי הענק מוצאות עדויות עקיפות לפעילות ביולוגית מיקרוביאלית — רגע שיוצר עניין ציבורי עצום, גם אם המדע נשאר זהיר בפרשנות.\n\nחיפוש אחר אותות טכנולוגיים מציוויליזציות חוצניות מקבל תקציבים ותשומת לב מחודשים, בזכות כלי ניתוח AI שמסננים כמויות עצומות של נתונים.\n\nהדיון הציבורי עובר מ"האם יש חיים בחלל" ל"מה זה אומר עלינו אם יש".'},
+      '26-50':{teaser:'עדות משמעותית לחיים ביולוגיים מחוץ לכדור הארץ משנה את השיח הציבורי.',body:'עדות משכנעת יותר לחיים ביולוגיים מיקרוביאליים על גוף שמימי אחר — כנראה תת-קרקעי במאדים או באוקיינוס של ירח קרח — הופכת לרגע היסטורי בשיח המדעי והציבורי.\n\nהדיון עובר מ"האם יש חיים" ל"מה המשמעות המוסרית של פגיעה בהם" — שאלות של שימור ואתיקה מדעית שהופכות למרכזיות.\n\nחיפוש אחר תבונה חוצנית ממשיך ללא תשובה חד-משמעית, אך שיטות החיפוש עצמן הופכות מתוחכמות משמעותית.'},
+      '51-100':{teaser:'השאלה "האם אנחנו לבד" עדיין פתוחה, אך מובנת טוב יותר.',body:'בטווח הרחוק הזה, סביר שיש הבנה טובה משמעותית יותר על שכיחות חיים מיקרוביאליים בגלקסיה — אולי אפילו עדות ישירה. תבונה טכנולוגית חוצנית נשארת שאלה פתוחה יותר.\n\nאם נמצאה עדות לחיים חוצניים כלשהם בטווח הזה, זה כנראה שינה עמוקות שאלות דתיות, פילוסופיות ותרבותיות שהיו יציבות במשך אלפי שנים.\n\nמה שכן ברור: החיפוש עצמו כבר שינה איך האנושות חושבת על מקומה ביקום, גם בלי וודאות מלאה.'},
+    },
+    disasters:{
+      '1-10':{teaser:'מערכות התרעה מוקדמת מבוססות AI מצילות חיים בקנה מידה חדש.',body:'רשתות חיישנים גלובליות, מנותחות בזמן אמת על ידי AI, מזהות רעידות אדמה, שיטפונות וגלי חום קטלניים דקות עד שעות מראש — הבדל שמציל אלפי חיים בשנה.\n\nעם זאת, תדירות ועוצמת אסונות טבע הקשורים לאקלים ממשיכה לעלות, בודקת את גבולות היכולת האנושית להסתגל, גם עם כלים טובים יותר.\n\nכשלים טכנולוגיים בקנה מידה גדול הופכים לסוג חדש של "אסון" שדורש תגובת חירום, לצד אסונות הטבע המסורתיים.'},
+      '11-25':{teaser:'ערים שלמות מתמודדות עם החלטות פינוי או הגנה בלתי הפיכות.',body:'ערי חוף ואזורים פגיעים במיוחד מגיעים לנקודות החלטה קשות: השקעה עצומה בתשתיות הגנה, או פינוי מתוכנן ומכוון — שתי האפשרויות יקרות ופוליטית טעונות.\n\nמערכות AI לחיזוי אסונות משתפרות משמעותית, אך אי-אפשר למנוע את כל האסונות — האתגר עובר מ"זיהוי" ל"תגובה מהירה ויעילה".\n\nכשלים הנדסיים בתשתיות ישנות שנבנו לפני עשרות שנים הופכים לסיכון גובר, כשהתחזוקה לא הדביקה את הקצב הנדרש.'},
+      '26-50':{teaser:'פליטי אקלים והחלטות פינוי בקנה מידה המוני הופכות לשגרה מוסדרת.',body:'הגירה מאורגנת בעקבות אסונות אקלים חוזרים הופכת לתהליך מוסדר, עם הסכמים בין-לאומיים שמסדירים אותה — במקום התמודדות אד-הוק כפי שהייתה בעבר.\n\nערים חדשות מתוכננות מלכתחילה עם עמידות קיצונית לאסונות הופכות לפתרון מעשי, לא רק לרעיון אדריכלי תיאורטי.\n\nכשלים בתשתיות דיגיטליות קריטיות הופכים למקור סיכון מרכזי לצד אסונות טבע — עולם תלוי-מערכות פגיע גם באופנים חדשים.'},
+      '51-100':{teaser:'היכולת להתמודד עם אסונות משתפרת דרמטית, אך הסיכונים גם הם משתנים.',body:'מערכות תחזית וניהול אסונות מתקדמות עד כדי הפחתה משמעותית באובדן חיים מאסונות טבע "מסורתיים" — אך סיכונים חדשים תופסים חלק מהמקום שהתפנה.\n\nחלק מהאזורים שהיו מיושבים בתחילת המאה כבר לא ראויים למגורים קבועים, בעוד טכנולוגיות הנדסה מאפשרות התיישבות במקומות שהיו בלתי אפשריים קודם.\n\nהלקח המרכזי שהאנושות לומדת: מניעה ותכנון מוקדם עולים הרבה פחות מתגובה לאחר מעשה — לקח שלוקח זמן רב מדי ליישם באופן עקבי.'},
+    },
+    culture:{
+      '1-10':{teaser:'יצירה בעזרת AI הופכת לכלי סטנדרטי באמנות, לא לשנוי מחלוקת בלבד.',body:'אמנים, מוזיקאים ויוצרי תוכן משלבים כלי AI ביצירה שלהם כדבר מובן מאליו — הוויכוח עובר מ"האם מותר" ל"איך שומרים על קול אמנותי אישי".\n\nחוויות בידור אישיות-לגמרי הופכות זמינות, מאתגרות את מושג "התרבות המשותפת" שכולם חווים יחד.\n\nזכויות יוצרים על תוכן שנוצר בעזרת AI הופכות לשדה קרב משפטי מרכזי, עם השלכות כלכליות עצומות על תעשיות היצירה המסורתיות.'},
+      '11-25':{teaser:'קווי הגבול בין יוצר אנושי ל"שותף" AI מיטשטשים לגמרי.',body:'רוב היצירה התרבותית המסחרית כוללת שיתוף פעולה משמעותי עם AI, לא רק ככלי עזר — קרדיט משותף בין יוצר אנושי למערכת הופך לנורמה מקובלת.\n\nחוויות בידור אימרסיביות הופכות לזרם מרכזי בתרבות, לא לנישה טכנולוגית — משנות איך אנשים חווים סיפורים ומוזיקה.\n\nתנועות תרבותיות שמדגישות "יצירה אנושית טהורה, בלי AI" צומחות כתגובת-נגד, בדומה לתנועות שהעריכו מלאכת יד בעידן התיעוש.'},
+      '26-50':{teaser:'תעשיות בידור שלמות נבנות סביב חוויות שלא היו אפשריות קודם.',body:'יצירת תוכן מותאם אישית לגמרי — סיפורים, מוזיקה, ואפילו סרטים שנוצרים בזמן אמת סביב הצופה — הופכת לענף תעשייתי מרכזי, לא לניסוי טכנולוגי.\n\nמושג "קהל" עצמו משתנה: חוויות תרבותיות משותפות הופכות נדירות יותר, לצד גל נוסטלגי שמחפש בכוונה חוויות משותפות כאלה.\n\nאמנות ותרבות מהמאה ה-20 וה-21 המוקדמת הופכות לנושא מחקר ושימור מיוחד, בדומה לאופן שבו מתייחסים היום לאמנות עתיקה.'},
+      '51-100':{teaser:'הגבול בין "יצירה", "חוויה" ו"משתתף" בתרבות מיטשטש כמעט לגמרי.',body:'בטווח הרחוק הזה, ההבחנה בין מי שיוצר תרבות למי שצורך אותה כבר לא ברורה — כלים ליצירה זמינים ופשוטים כל כך שכל אדם הוא, במידה מסוימת, גם יוצר.\n\nתרבויות היברידיות שנוצרו משילוב קהילות אנוש שונות מייצרות אמנות, מוזיקה וסיפורים שקשה מאוד להסביר במונחי תחילת המאה.\n\nמה שנשאר יציב: הצורך האנושי הבסיסי בסיפור, במוזיקה ובביטוי יצירתי ממשיך להתקיים בכל צורה שהטכנולוגיה מאפשרת.'},
+    },
+    education:{
+      '1-10':{teaser:'עוזרי למידה אישיים מבוססי AI הופכים לחלק שגרתי מכל כיתה.',body:'כל תלמיד מקבל עוזר למידה AI מותאם אישית שמזהה את קצב הלמידה, החוזקות והקשיים שלו — לא מחליף מורה, אלא הופך לכלי תמיכה שהיה בלתי אפשרי לספק בעבר לכל תלמיד בנפרד.\n\nמערכות חינוך רבות זזות מ"שינון וזכירה" ל"חשיבה ביקורתית ושימוש נכון בכלי AI" כמיומנות מרכזית.\n\nפערי גישה לחינוך איכותי בין אזורים עשירים לעניים מצטמצמים חלקית בזכות כלים דיגיטליים זולים, אך לא נעלמים.'},
+      '11-25':{teaser:'מודל "כיתה אחת, גיל אחד" מתחיל להתפרק לטובת למידה מותאמת אישית לגמרי.',body:'בתי ספר רבים זונחים את המודל המסורתי של קיבוץ תלמידים לפי גיל, לטובת התקדמות אישית לפי יכולת ועניין.\n\nלמידה מעשית וחונכות מקבלת דגש מחודש, כי מיומנויות טכניות רבות שהיו נלמדות בעבודה עצמה כבר לא מספיקות בעולם משתנה מהר.\n\n"למידה לאורך החיים" מפסיקה להיות סיסמה ריקה והופכת למציאות מעשית — רוב המבוגרים חוזרים ללמוד מיומנויות חדשות כמה פעמים במהלך הקריירה.'},
+      '26-50':{teaser:'ההבחנה בין "בית ספר" ל"למידה בחיי היומיום" מטשטשת.',body:'למידה מתרחשת בזרימה מתמדת דרך AI מוטמע בסביבה, לא רק במוסדות ייעודיים — הידע נרכש תוך כדי חיים, לא רק בתקופה מוגדרת של "לימודים".\n\nמוסדות חינוך מסורתיים לא נעלמים, אך תפקידם משתנה — פחות העברת מידע, יותר בניית קהילה ומיומנויות חברתיות.\n\nתעודות והישגים אקדמיים מסורתיים מאבדים חלק מהמשקל שלהם בשוק העבודה, לטובת יכולת מוכחת לפתור בעיות אמיתיות.'},
+      '51-100':{teaser:'למידה הופכת לתהליך רציף וטבעי כמו נשימה, לא לשלב נפרד בחיים.',body:'בטווח הרחוק הזה, הגבול בין "להיות" ל"ללמוד" כמעט נעלם — ממשקים ישירים יותר בין אדם למידע הופכים רכישת ידע חדש למהירה ואינטואיטיבית בהרבה.\n\nהשאלה המרכזית בחינוך עוברת מ"איך מעבירים ידע" ל"איזה ידע וערכים באמת חשוב להעביר".\n\nמה שנשאר יציב: הצורך האנושי בסקרנות, בגילוי ובתחושת הישג מלמידה נשאר בסיסי לחוויה האנושית, גם כשהאמצעים משתנים לגמרי.'},
+    },
+  };
+  function bucketForYears(y){
+    if(y<=10) return '1-10';
+    if(y<=25) return '11-25';
+    if(y<=50) return '26-50';
+    return '51-100';
+  }
+  function encyEntry(topicId,bucket){
+    return (ENCYCLOPEDIA[topicId] && ENCYCLOPEDIA[topicId][bucket]) || STUB;
+  }
+  let pendingPerkAction=null, selectedPerkTopicId=null;
+  function currentYearBucket(){
+    const targetYear=new Date(myMs).getFullYear();
+    const yearsAhead=Math.max(1,targetYear-new Date().getFullYear());
+    return {targetYear, bucket:bucketForYears(Math.min(100,yearsAhead))};
+  }
+  function openTopicPicker(action){
+    pendingPerkAction=action;
+    const {bucket}=currentYearBucket();
+    const shuffled=[...ENCY_TOPICS].sort(()=>Math.random()-0.5).slice(0,7);
+    const grid=$('topicPickerGrid');
+    grid.innerHTML='';
+    shuffled.forEach(t=>{
+      const entry=encyEntry(t.id,bucket);
+      const tile=document.createElement('div');
+      tile.className='encyTile';
+      tile.innerHTML=buildEncyIllustration(t.motif,t.accent)+'<b>'+t.title+'</b><span>'+entry.teaser+'</span>';
+      tile.onclick=()=>chooseTopic(t.id);
+      grid.appendChild(tile);
+    });
+    const surprise=document.createElement('div');
+    surprise.className='encyTile';
+    surprise.innerHTML='<div style="font-size:38px;line-height:1">🎲</div><b>תפתיע אותי</b>';
+    surprise.onclick=()=>chooseTopic(null);
+    grid.appendChild(surprise);
+    $('topicPicker').classList.add('open');
+  }
+  function chooseTopic(topicId){
+    if(!topicId){ topicId=ENCY_TOPICS[Math.floor(Math.random()*ENCY_TOPICS.length)].id; }
+    selectedPerkTopicId=topicId;
+    $('topicPicker').classList.remove('open');
+    if(pendingPerkAction==='letter'){
+      $('llLetterBtn').click();
+    }else if(pendingPerkAction==='selfie'){
+      camOpenedFromPrediction=true;
+      stopPredCam();
+      $('predictionScreen').classList.remove('open');
+      openCam();
+    }
+    pendingPerkAction=null;
+  }
+  let encyCurrentYear=0, encyCurrentBucket='1-10';
+  function renderEncyGrid(targetYear,yearsAhead){
+    const gridEl=$('encyGrid'), introEl=$('encyIntro');
+    if(yearsAhead<1 || yearsAhead>100){ gridEl.style.display='none'; introEl.style.display='none'; return; }
+    encyCurrentYear=targetYear;
+    encyCurrentBucket=bucketForYears(yearsAhead);
+    gridEl.innerHTML='';
+    ENCY_TOPICS.forEach(t=>{
+      const entry=encyEntry(t.id,encyCurrentBucket);
+      const tile=document.createElement('div');
+      tile.className='encyTile';
+      tile.innerHTML=buildEncyIllustration(t.motif,t.accent)+'<b>'+t.title+'</b><span>'+entry.teaser+'</span>';
+      tile.onclick=()=>showEncyDetail(t.id);
+      gridEl.appendChild(tile);
+    });
+    introEl.style.display='block';
+    gridEl.style.display='grid';
+  }
+  function showEncyDetail(topicId){
+    const t=ENCY_TOPICS.find(x=>x.id===topicId);
+    const entry=encyEntry(topicId,encyCurrentBucket);
+    $('encyDetailBg').style.background=$('predBg').style.background;
+    $('encyDetailIcon').innerHTML=buildEncyIllustration(t.motif,t.accent);
+    $('encyDetailTitle').textContent=t.title;
+    $('encyDetailYear').textContent=encyCurrentYear;
+    $('encyDetailBody').textContent=entry.body;
+    $('predictionScreen').classList.remove('open');
+    $('encyDetail').classList.add('open');
+  }
+  $('encyDetailClose').onclick=()=>{ $('encyDetail').classList.remove('open'); };
+  $('encyBack').onclick=()=>{ $('encyDetail').classList.remove('open'); $('predictionScreen').classList.add('open'); };
+
+  /* מבזק מהעתיד: 2-3 כותרות אמיתיות מהאנציקלופדיה, מוצגות ברצף מיד עם הנחיתה בקפיצת זמן */
+  function playStaticBurst(){
+    if(!AC) return;
+    const now=AC.currentTime, dur=0.22;
+    const bufSize=Math.floor(AC.sampleRate*dur);
+    const buf=AC.createBuffer(1,bufSize,AC.sampleRate);
+    const data=buf.getChannelData(0);
+    for(let i=0;i<bufSize;i++) data[i]=(Math.random()*2-1)*(1-i/bufSize);
+    const src=AC.createBufferSource(); src.buffer=buf;
+    const bp=AC.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2200; bp.Q.value=0.7;
+    const g=AC.createGain();
+    g.gain.setValueAtTime(0.0001,now);
+    g.gain.exponentialRampToValueAtTime(soundOn?0.16:0.0001,now+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+dur);
+    src.connect(bp); bp.connect(g); g.connect(AC.destination);
+    src.start(now); src.stop(now+dur+0.02);
+  }
+  function playFlashTick(){
+    if(!AC) return;
+    const now=AC.currentTime;
+    const o=AC.createOscillator(), g=AC.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(1400,now); o.frequency.exponentialRampToValueAtTime(900,now+0.08);
+    g.gain.setValueAtTime(0.0001,now);
+    g.gain.exponentialRampToValueAtTime(soundOn?0.09:0.0001,now+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+0.12);
+    o.connect(g); g.connect(AC.destination);
+    o.start(now); o.stop(now+0.14);
+  }
+  function showNewsFlash(targetYear){
+    const yearsAhead=targetYear-new Date().getFullYear();
+    if(yearsAhead<1) return;
+    const bucket=bucketForYears(Math.min(100,Math.max(1,yearsAhead)));
+    const picks=[...ENCY_TOPICS].sort(()=>Math.random()-0.5).slice(0,3);
+    const overlay=$('newsFlash');
+    let i=0, cancelled=false;
+    overlay.onclick=()=>{ cancelled=true; overlay.classList.remove('open'); };
+    overlay.classList.add('open');
+    ensureAudio(); if(AC.state==='suspended') AC.resume();
+    playStaticBurst();
+    function showNext(){
+      if(cancelled) return;
+      if(i>=picks.length){ overlay.classList.remove('open'); return; }
+      const t=picks[i];
+      const entry=encyEntry(t.id,bucket);
+      $('newsFlashIcon').innerHTML=buildEncyIllustration(t.motif,t.accent);
+      $('newsFlashTitle').textContent=t.title;
+      $('newsFlashText').textContent=entry.teaser;
+      playFlashTick();
+      i++;
+      setTimeout(showNext,3200);
+    }
+    showNext();
+  }
+
+
+  /* הסביבה מגיבה ליעד הנחיתה: גוון רקע לפי עונת השנה ושעת היום ביעד — כדי שהנחיתה תרגיש כמו הגעה למקום, לא רק שינוי ספרות */
+  const SEASON_PALETTE={
+    winter:{day:[231,238,247],dusk:[220,227,239],night:[203,211,227]},
+    spring:{day:[238,246,231],dusk:[230,239,217],night:[216,227,206]},
+    summer:{day:[255,243,219],dusk:[252,231,194],night:[233,217,184]},
+    autumn:{day:[243,228,206],dusk:[234,211,176],night:[221,198,166]}
+  };
+  function paletteForTarget(targetMs){
+    const d=new Date(targetMs), mo=d.getMonth(), hr=d.getHours();
+    const season = (mo===11||mo<=1)?'winter' : mo<=4?'spring' : mo<=7?'summer' : 'autumn';
+    const tod = (hr>=6&&hr<17)?'day' : (hr>=17&&hr<21)?'dusk' : 'night';
+    return SEASON_PALETTE[season][tod];
+  }
+
+  let futureSnaps=[], selectedSnapIdx=-1; // {blob,url,ms}[] — כל תמונה שצולמה בעדשה במסע הנוכחי
+  function refreshAttachUI(){
+    const has=futureSnaps.length>0;
+    $('lmAttachEmpty').style.display = has? 'none':'block';
+    $('lmAttachGot').style.display = has? 'flex':'none';
+    if(!has) return;
+    if(selectedSnapIdx<0 || selectedSnapIdx>=futureSnaps.length) selectedSnapIdx=futureSnaps.length-1; // ברירת מחדל: האחרונה
+    const gal=$('lmGallery'); gal.innerHTML='';
+    futureSnaps.forEach((snap,i)=>{
+      const img=document.createElement('img');
+      img.className='lmThumb'+(i===selectedSnapIdx?' sel':'');
+      img.src=snap.url;
+      img.onclick=()=>{ selectedSnapIdx=i; refreshAttachUI(); };
+      gal.appendChild(img);
+    });
+  }
+  let generatedTopicImageData=null;
+  $('llLetterBtn').onclick=()=>{
+    $('lmText').value=''; $('lmTo').value=''; $('lmFrom').value='';
+    refreshAttachUI();
+    refreshVoiceAttachUI();
+    generatedTopicImageData=null;
+    $('lmAiImgPreview').style.display='none';
+    $('lmAiImgStatus').textContent='';
+    $('lmGenImg').disabled=false;
+    if(selectedPerkTopicId){
+      const t=ENCY_TOPICS.find(x=>x.id===selectedPerkTopicId);
+      const {bucket}=currentYearBucket();
+      const entry=encyEntry(selectedPerkTopicId,bucket);
+      const bgSentences=entry.body.split('\n\n')[0];
+      $('lmBgPreviewIcon').innerHTML=buildEncyIllustration(t.motif,t.accent).replace('<svg ','<svg width="36" height="36" ');
+      $('lmBgPreviewText').textContent=bgSentences;
+      $('lmBgPreview').style.display='flex';
+      $('lmAiImg').style.display='flex';
+    }else{
+      $('lmBgPreview').style.display='none';
+      $('lmAiImg').style.display='none';
+    }
+    $('letterModal').classList.add('open');
+  };
+  $('lmGenImg').onclick=async ()=>{
+    if(!selectedPerkTopicId) return;
+    const t=ENCY_TOPICS.find(x=>x.id===selectedPerkTopicId);
+    const {targetYear}=currentYearBucket();
+    $('lmGenImg').disabled=true;
+    $('lmAiImgStatus').textContent='יוצר תמונה… (יכול לקחת כמה שניות)';
+    $('lmAiImgPreview').style.display='none';
+    try{
+      const prompt='איור דיגיטלי מופשט ואמנותי, לא פוטוריאליסטי וללא טקסט או כתובית בתמונה, המתאר את הנושא "'+t.title+'" בעולם של שנת '+targetYear+'. סגנון עתידני, נקי ומינימליסטי, גוונים סביב הצבע '+t.accent+'.';
+      const res=await fetch('/.netlify/functions/generate-image',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({prompt})
+      });
+      const data=await res.json();
+      if(!res.ok || !data.image) throw new Error(data.error||'שגיאה לא ידועה');
+      generatedTopicImageData='data:'+(data.mimeType||'image/png')+';base64,'+data.image;
+      $('lmAiImgEl').src=generatedTopicImageData;
+      $('lmAiImgPreview').style.display='flex';
+      $('lmAiImgStatus').textContent='';
+    }catch(e){
+      $('lmAiImgStatus').textContent='יצירת התמונה נכשלה — נסה שוב ('+e.message+')';
+    }
+    $('lmGenImg').disabled=false;
+  };
+  $('lmCancel').onclick=()=>{ $('letterModal').classList.remove('open'); returnFromCameraFlowIfNeeded(); };
+
+  $('lmCreate').onclick=async ()=>{
+    const to=$('lmTo').value.trim();
+    const text=$('lmText').value.trim();
+    if(!text){ $('lmText').focus(); return; }
+    const from = $('lmFrom').value.trim();
+    $('lcFromName').textContent = from || 'אני';
+    $('lcToName').textContent = to || 'העתיד שלי';
+    $('lcFutureStamp').textContent = fmtLetterDate(myMs)+' · '+fmtLetterTime(myMs);
+    $('lcRealStamp').textContent = fmtLetterDate(Date.now())+' · '+fmtLetterTime(Date.now());
+    const letterSeq = nextArtifactSeq();
+    $('lcSealNum').textContent = '#'+String(letterSeq).padStart(6,'0');
+    $('lcBody').textContent = text;
+    if(selectedPerkTopicId){
+      const t=ENCY_TOPICS.find(x=>x.id===selectedPerkTopicId);
+      const {bucket}=currentYearBucket();
+      const entry=encyEntry(selectedPerkTopicId,bucket);
+      const bgSentences=entry.body.split('\n\n')[0]; // הפסקה הראשונה — כ-2 משפטים
+      $('lcBgIcon').innerHTML=buildEncyIllustration(t.motif,t.accent).replace('<svg ','<svg width="44" height="44" ');
+      $('lcBgText').textContent=bgSentences;
+      $('lcBackground').style.display='flex';
+      selectedPerkTopicId=null;
+    }else{
+      $('lcBackground').style.display='none';
+    }
+    const wantsAttach = futureSnaps.length>0 && selectedSnapIdx>=0 && $('lmAttachChk').checked;
+    $('lcPhoto').style.display='none';
+    let useTopicImg=false;
+    if(generatedTopicImageData && $('lmAiImgChk').checked){
+      $('lcTopicImgEl').src=generatedTopicImageData;
+      $('lcTopicImg').style.display='block';
+      useTopicImg=true;
+    }else{
+      $('lcTopicImg').style.display='none';
+    }
+    generatedTopicImageData=null;
+    $('letterModal').classList.remove('open');
+    try{
+      if(useTopicImg){
+        const img=$('lcTopicImgEl');
+        if(img.decode){ await img.decode().catch(()=>{}); }
+        else{ await new Promise(r=>{ img.complete? r() : img.onload=r; }); }
+        await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+      }
+      const canvas = await html2canvas($('letterCard'), {backgroundColor:null, scale:2, useCORS:true});
+      canvas.toBlob(blob=>{ if(blob) showLetterSend(blob,wantsAttach); }, 'image/png', 0.95);
+    }catch(e){ alert('יצירת האיגרת נכשלה — נסה שוב'); }
+  };
+
+  let letterBlob=null, letterFileName='', letterWantsPhoto=false;
+  function showLetterSend(blob,wantsPhoto){
+    letterBlob=blob;
+    letterWantsPhoto=!!wantsPhoto;
+    letterFileName='igeret-me-heatid-'+Date.now()+'.png';
+    const url=URL.createObjectURL(blob);
+    $('lsPreview').src=url;
+    $('lsSave').href=url; $('lsSave').download=letterFileName;
+    $('letterSendModal').classList.add('open');
+  }
+  async function dispatchLetter(){
+    if(!letterBlob) return;
+    const file=new File([letterBlob],letterFileName,{type:letterBlob.type});
+    const optional=[];
+    if(letterWantsPhoto && futureSnaps.length>0 && selectedSnapIdx>=0){
+      const p=futureSnaps[selectedSnapIdx];
+      optional.push({file:new File([p.blob],'tmuna-me-heatid-'+p.ms+'.jpg',{type:p.blob.type||'image/jpeg'}), label:' צורפה גם תמונה.'});
+    }
+    if(futureVoices.length>0 && selectedVoiceIdx>=0 && $('lmVoiceChk').checked){
+      const v=futureVoices[selectedVoiceIdx];
+      optional.push({file:new File([v.blob],'hodaa-kolit-'+v.ms+'.wav',{type:v.blob.type||'audio/wav'}), label:' צורפה גם הודעה קולית.'});
+    }
+    // מנסים לשגר עם כל הצירופים; אם הדפדפן לא תומך בכל הכמות, מורידים אחד בכל פעם עד שמוצאים צירוף שנתמך
+    for(let n=optional.length; n>=0; n--){
+      const chosen=optional.slice(0,n);
+      const files=[file,...chosen.map(o=>o.file)];
+      if(navigator.canShare && navigator.canShare({files})){
+        try{
+          await navigator.share({files,title:'איגרת מן העתיד'});
+          const dropped=optional.length-n;
+          addJournalEntry('נשלחה איגרת לעולם המקור.'+chosen.map(o=>o.label).join('')+(dropped?' ('+dropped+' צירוף/ים לא נתמכו לשיתוף משולב בדפדפן זה)':''));
+          setTimeout(()=>{ $('letterSendModal').classList.remove('open'); }, 400);
+        }catch(e){}
+        return;
+      }
+    }
+    alert('שיתוף ישיר לא נתמך בדפדפן הזה — אפשר לשמור את האיגרת לגלריה ולצרף ידנית.');
+  }
+  $('lsShare').onclick=dispatchLetter;
+  $('lsWa').onclick=dispatchLetter;
+  $('lsGm').onclick=dispatchLetter;
+  $('lsSm').onclick=dispatchLetter;
+  $('lsClose').onclick=()=>{ $('letterSendModal').classList.remove('open'); returnFromCameraFlowIfNeeded(); };
+
+  /* ---------- הודעה קולית מן העתיד ---------- */
+  function pickAudioMime(){
+    for(const mt of ['audio/webm;codecs=opus','audio/webm','audio/mp4']){
+      if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mt)) return {mimeType:mt};
+    }
+    return {};
+  }
+  function audioBufferToWav(buffer){
+    const numCh=buffer.numberOfChannels, sr=buffer.sampleRate, len=buffer.length;
+    const blockAlign=numCh*2, dataSize=len*blockAlign;
+    const ab=new ArrayBuffer(44+dataSize), view=new DataView(ab);
+    const writeStr=(o,s)=>{ for(let i=0;i<s.length;i++) view.setUint8(o+i,s.charCodeAt(i)); };
+    writeStr(0,'RIFF'); view.setUint32(4,36+dataSize,true); writeStr(8,'WAVE');
+    writeStr(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true);
+    view.setUint16(22,numCh,true); view.setUint32(24,sr,true);
+    view.setUint32(28,sr*blockAlign,true); view.setUint16(32,blockAlign,true); view.setUint16(34,16,true);
+    writeStr(36,'data'); view.setUint32(40,dataSize,true);
+    const channels=[]; for(let c=0;c<numCh;c++) channels.push(buffer.getChannelData(c));
+    let offset=44;
+    for(let i=0;i<len;i++){
+      for(let c=0;c<numCh;c++){
+        const s=Math.max(-1,Math.min(1,channels[c][i]));
+        view.setInt16(offset, s<0? s*0x8000 : s*0x7FFF, true);
+        offset+=2;
+      }
+    }
+    return new Blob([ab],{type:'audio/wav'});
+  }
+  // ממירים תמיד ל-WAV — WebM/Opus (מה שדפדפני אנדרואיד/כרום מקליטים) לא נתמך באייפון בכלל, וזו הסיבה שהקובץ "לא נפתח"
+  async function convertToWav(blob){
+    const arrBuf=await blob.arrayBuffer();
+    const decodeCtx = AC || new (window.AudioContext||window.webkitAudioContext)();
+    const audioBuf = await decodeCtx.decodeAudioData(arrBuf);
+    return {blob:audioBufferToWav(audioBuf), duration:audioBuf.duration};
+  }
+  let futureVoices=[], selectedVoiceIdx=-1; // {blob,url,ms,duration}[] — כל הודעה קולית שהוקלטה במסע הנוכחי, זמינה לצירוף לאיגרת
+  function refreshVoiceAttachUI(){
+    const has=futureVoices.length>0;
+    $('lmVoiceEmpty').style.display = has? 'none':'block';
+    $('lmVoiceGot').style.display = has? 'flex':'none';
+    if(!has) return;
+    if(selectedVoiceIdx<0 || selectedVoiceIdx>=futureVoices.length) selectedVoiceIdx=futureVoices.length-1;
+    const wrap=$('lmVoiceGallery'); wrap.innerHTML='';
+    futureVoices.forEach((v,i)=>{
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='lmVoiceChip'+(i===selectedVoiceIdx?' sel':'');
+      const s=Math.round(v.duration||0);
+      b.textContent='🎙️ '+Math.floor(s/60)+':'+pad(s%60);
+      b.onclick=()=>{ selectedVoiceIdx=i; refreshVoiceAttachUI(); };
+      wrap.appendChild(b);
+    });
+  }
+  function buildImpulse(dur,decay){
+    const rate=AC.sampleRate, len=Math.max(1,Math.floor(rate*dur)), imp=AC.createBuffer(2,len,rate);
+    for(let c=0;c<2;c++){
+      const ch=imp.getChannelData(c);
+      for(let i=0;i<len;i++) ch[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay);
+    }
+    return imp;
+  }
+  function buildNoiseSource(){
+    const rate=AC.sampleRate, len=rate*2, buf=AC.createBuffer(1,len,rate);
+    const ch=buf.getChannelData(0);
+    for(let i=0;i<len;i++) ch[i]=(Math.random()*2-1)*0.6;
+    const src=AC.createBufferSource(); src.buffer=buf; src.loop=true;
+    return src;
+  }
+  let voiceStream=null, voiceRecorder=null, voiceChunks=[], voiceBlob=null, voiceRecording=false, voiceRecStart=0, voiceTimerId=null, voiceNoiseSrc=null;
+  function updateVoiceUI(){
+    $('vmRecBtn').classList.toggle('recording',voiceRecording);
+    $('vmRecBtn').textContent = voiceRecording ? '⏹' : '🎙️';
+    $('vmHint').textContent = voiceRecording ? 'מקליט… גע כדי לעצור' : (voiceBlob?'':'גע כדי להתחיל להקליט');
+  }
+  function updateVoiceTimer(){
+    const s=Math.floor((performance.now()-voiceRecStart)/1000);
+    $('vmTimer').textContent=pad(Math.floor(s/60))+':'+pad(s%60);
+  }
+  async function startVoiceRec(){
+    let stream;
+    try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+    catch(e){ alert('אין גישה למיקרופון — בדוק הרשאות.'); return; }
+    voiceStream=stream;
+    ensureAudio(); if(AC.state==='suspended') AC.resume();
+    const src=AC.createMediaStreamSource(stream);
+    const hp=AC.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=280;
+    const band=AC.createBiquadFilter(); band.type='bandpass'; band.frequency.value=1500; band.Q.value=0.7;
+    const conv=AC.createConvolver(); conv.buffer=buildImpulse(1.1,2.2);
+    const dryGain=AC.createGain(); dryGain.gain.value=0.72;
+    const wetGain=AC.createGain(); wetGain.gain.value=0.34;
+    const dest=AC.createMediaStreamDestination();
+    src.connect(hp); hp.connect(band);
+    band.connect(dryGain); dryGain.connect(dest);
+    band.connect(conv); conv.connect(wetGain); wetGain.connect(dest);
+    const noise=buildNoiseSource(), noiseGain=AC.createGain(); noiseGain.gain.value=0.012;
+    noise.connect(noiseGain); noiseGain.connect(dest); noise.start();
+    voiceNoiseSrc=noise;
+    voiceChunks=[];
+    try{ voiceRecorder=new MediaRecorder(dest.stream,pickAudioMime()); }
+    catch(e){ alert('הקלטה לא נתמכת בדפדפן זה.'); return; }
+    voiceRecorder.ondataavailable=e=>{ if(e.data.size) voiceChunks.push(e.data); };
+    voiceRecorder.onstop=async ()=>{
+      const rawBlob=new Blob(voiceChunks,{type:voiceRecorder.mimeType||'audio/webm'});
+      if(voiceNoiseSrc){ try{voiceNoiseSrc.stop();}catch(e){} voiceNoiseSrc=null; }
+      if(voiceStream){ voiceStream.getTracks().forEach(t=>t.stop()); voiceStream=null; }
+      $('vmHint').textContent='מעבד…';
+      try{
+        const res=await convertToWav(rawBlob);
+        voiceBlob=res.blob;
+        futureVoices.push({blob:voiceBlob, url:URL.createObjectURL(voiceBlob), ms:Date.now(), duration:res.duration});
+        selectedVoiceIdx=futureVoices.length-1;
+      }catch(e){
+        voiceBlob=rawBlob;
+        futureVoices.push({blob:voiceBlob, url:URL.createObjectURL(voiceBlob), ms:Date.now(), duration:0});
+        selectedVoiceIdx=futureVoices.length-1;
+      }
+      const url=URL.createObjectURL(voiceBlob);
+      $('vmAudio').src=url;
+      $('vmPreviewWrap').style.display='flex';
+      updateVoiceUI();
+    };
+    voiceRecorder.start();
+    voiceRecording=true; voiceRecStart=performance.now();
+    $('vmPreviewWrap').style.display='none';
+    updateVoiceUI();
+    voiceTimerId=setInterval(updateVoiceTimer,200);
+  }
+  function stopVoiceRec(){
+    if(voiceRecorder && voiceRecorder.state!=='inactive') voiceRecorder.stop();
+    voiceRecording=false;
+    clearInterval(voiceTimerId);
+    updateVoiceUI();
+  }
+  $('llVoiceBtn').onclick=()=>{
+    voiceBlob=null; voiceChunks=[];
+    $('vmPreviewWrap').style.display='none';
+    $('vmTimer').textContent='00:00';
+    updateVoiceUI();
+    $('voiceModal').classList.add('open');
+  };
+  $('vmRecBtn').onclick=()=>{ voiceRecording ? stopVoiceRec() : startVoiceRec(); };
+  $('vmReRecord').onclick=()=>{ voiceBlob=null; $('vmPreviewWrap').style.display='none'; $('vmTimer').textContent='00:00'; };
+  $('vmCancel').onclick=()=>{ if(voiceRecording) stopVoiceRec(); $('voiceModal').classList.remove('open'); returnFromCameraFlowIfNeeded(); };
+  $('vmSend').onclick=()=>{
+    if(!voiceBlob) return;
+    $('voiceModal').classList.remove('open');
+    showVoiceSend();
+  };
+
+  let voiceSendBlob=null, voiceSendFileName='';
+  function showVoiceSend(){
+    voiceSendBlob=voiceBlob;
+    voiceSendFileName='hodaa-kolit-me-heatid-'+Date.now()+(voiceSendBlob.type.includes('wav')?'.wav':voiceSendBlob.type.includes('mp4')?'.m4a':'.webm');
+    const url=URL.createObjectURL(voiceSendBlob);
+    $('vsAudio').src=url;
+    $('vsSave').href=url; $('vsSave').download=voiceSendFileName;
+    $('voiceSendModal').classList.add('open');
+    addJournalEntry('נשלחה הודעה קולית לעולם המקור.');
+  }
+  async function dispatchVoice(){
+    if(!voiceSendBlob) return;
+    const file=new File([voiceSendBlob],voiceSendFileName,{type:voiceSendBlob.type});
+    const preamble='שלום רב, יש לך הודעה מהעתיד. האם תהיה מוכן לקבל? מצורפת הקלטה מ'+fmtLetterDate(myMs)+' · '+fmtLetterTime(myMs)+'.';
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{
+        await navigator.share({files:[file],title:'הודעה קולית מהעתיד',text:preamble});
+        setTimeout(()=>{ $('voiceSendModal').classList.remove('open'); },400);
+      }catch(e){}
+    }else{
+      alert('שיתוף ישיר לא נתמך בדפדפן הזה — אפשר לשמור את ההקלטה ולצרף ידנית.');
+    }
+  }
+  $('vsShare').onclick=dispatchVoice;
+  $('vsWa').onclick=dispatchVoice;
+  $('vsGm').onclick=dispatchVoice;
+  $('vsSm').onclick=dispatchVoice;
+  $('vsClose').onclick=()=>{ $('voiceSendModal').classList.remove('open'); returnFromCameraFlowIfNeeded(); };
+
+  /* ---------- קפיצת זמן: קפיצה ישירה למועד עתידי, לא הדרגתית ---------- */
+  const JUMP_MAX_YEARS=100, JUMP_COST_SEC=300; // 5 דקות מהמכסה היומית
+  function ymd(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+  function openManualJumpForm(){
+    const base=new Date(Math.max(Date.now(), myMs)+60000); // דקה קדימה מהרגע הנוכחי, כדי שכל בחירה תהיה עתידית ודאית
+    const maxD=new Date(base); maxD.setFullYear(maxD.getFullYear()+JUMP_MAX_YEARS);
+    $('jmDate').min=ymd(base); $('jmDate').max=ymd(maxD);
+    $('jmDate').value=ymd(base);
+    $('jmTime').value=pad(base.getHours())+':'+pad((Math.ceil(base.getMinutes()/5)*5)%60);
+    $('jmErr').textContent='';
+    $('jumpModal').classList.add('open');
+  }
+  $('jumpLaunch').onclick=()=>{ startTelescope(false); };
+  $('jmCancel').onclick=()=>$('jumpModal').classList.remove('open');
+
+  /* ---------- טלסקופ העתיד: פתיחת המסע — בחירת יעד קפיצה בגילוי, לא בהקלדת תאריך ---------- */
+  let telescopeTimer=null, telescopeFreeJump=true, pendingCloudYear=null;
+  function pickCloudContent(){
+    if(Math.random()<0.82){
+      const yearsAhead=1+Math.floor(Math.random()*100);
+      const year=new Date().getFullYear()+yearsAhead;
+      const bucket=bucketForYears(yearsAhead);
+      const t=ENCY_TOPICS[Math.floor(Math.random()*ENCY_TOPICS.length)];
+      const entry=encyEntry(t.id,bucket);
+      return {year,teaser:entry.teaser,mystery:false};
+    }else{
+      const yearsAhead=100+Math.floor(Math.random()*300);
+      const year=new Date().getFullYear()+yearsAhead;
+      return {year,teaser:'עתיד רחוק ומעורפל — קלוד עצמו לא בטוח מה בדיוק מחכה שם.',mystery:true};
+    }
+  }
+  const BLOB_RADII=[
+    '58% 42% 55% 45% / 45% 55% 42% 58%',
+    '48% 52% 40% 60% / 55% 48% 52% 45%',
+    '62% 38% 48% 52% / 40% 52% 60% 48%'
+  ];
+  function placeTag(sky){
+    const data=pickCloudContent();
+    const el=document.createElement('div');
+    el.className='telescopeTag'+(data.mystery?' mystery':'');
+    const shortTeaser=data.teaser.split(' ').slice(0,5).join(' ')+'…';
+    const radius=BLOB_RADII[Math.floor(Math.random()*BLOB_RADII.length)];
+    el.innerHTML='<div class="telescopeCloudShape" style="border-radius:'+radius+'"></div><div class="telescopeTagText"><b>'+data.year+'</b><span>'+shortTeaser+'</span></div>';
+    const dx=(Math.random()*34-17).toFixed(0)+'px', dy=(Math.random()*26-13).toFixed(0)+'px';
+    el.style.setProperty('--dx',dx); el.style.setProperty('--dy',dy);
+    el.style.animationDuration=(4.5+Math.random()*3)+'s,'+(2.2+Math.random()*1.4)+'s';
+    el.style.animationDelay=(Math.random()*2)+'s,'+(Math.random()*2)+'s';
+    sky.appendChild(el);
+    makeTagDraggable(el,sky,data);
+    return el;
+  }
+  let telescopeActivePointers=0;
+  function makeTagDraggable(el,sky,data){
+    const THRESH=14;
+    let startX=0,startY=0,startLeftPct=0,startTopPct=0,dragging=false,moved=false;
+    el.addEventListener('pointerdown',e=>{
+      telescopeActivePointers++;
+      if(telescopeActivePointers>1){ moved=true; dragging=false; return; } // אצבע שנייה = צביטה לזום, לא הקשה/גרירה — משאירים לדפדפן
+      dragging=true; moved=false;
+      startX=e.clientX; startY=e.clientY;
+      startLeftPct=parseFloat(el.style.left)||0;
+      startTopPct=parseFloat(el.style.top)||0;
+      try{ el.setPointerCapture(e.pointerId); }catch(err){}
+      el.style.animationPlayState='paused';
+    });
+    el.addEventListener('pointermove',e=>{
+      if(telescopeActivePointers>1){ moved=true; return; }
+      if(!dragging) return;
+      const dxp=e.clientX-startX, dyp=e.clientY-startY;
+      if(Math.abs(dxp)>THRESH || Math.abs(dyp)>THRESH) moved=true;
+      if(moved){
+        const rect=sky.getBoundingClientRect();
+        el.style.left=Math.max(2,Math.min(98,startLeftPct + dxp/rect.width*100))+'%';
+        el.style.top=Math.max(4,Math.min(96,startTopPct + dyp/rect.height*100))+'%';
+      }
+    });
+    function endDrag(){
+      telescopeActivePointers=Math.max(0,telescopeActivePointers-1);
+      if(!dragging) return;
+      dragging=false;
+      el.style.animationPlayState='running';
+      if(!moved){ playTelescopeSelect(); openTelescopeConfirm(data); }
+    }
+    el.addEventListener('pointerup',endDrag);
+    el.addEventListener('pointercancel',endDrag);
+  }
+  function buildTelescopeField(){
+    const sky=$('telescopeSky');
+    sky.innerHTML='';
+    for(let i=0;i<35;i++){
+      const el=placeTag(sky);
+      el.style.top=(20+Math.random()*74)+'%';
+      el.style.left=(6+Math.random()*84)+'%';
+      el.style.zIndex=Math.floor(Math.random()*24);
+    }
+  }
+  function playTelescopeAmbient(){
+    if(!AC) return;
+    const now=AC.currentTime;
+    [740,988,1240].forEach((f,i)=>{
+      const o=AC.createOscillator(), g=AC.createGain();
+      o.type='sine'; o.frequency.value=f;
+      const t0=now+i*0.09;
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.exponentialRampToValueAtTime(soundOn?0.05:0.0001,t0+0.4);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+1.6);
+      o.connect(g); g.connect(AC.destination);
+      o.start(t0); o.stop(t0+1.7);
+    });
+  }
+  function playTelescopeSelect(){
+    if(!AC) return;
+    const now=AC.currentTime;
+    const o=AC.createOscillator(), g=AC.createGain();
+    o.type='triangle'; o.frequency.setValueAtTime(1100,now); o.frequency.exponentialRampToValueAtTime(1760,now+0.1);
+    g.gain.setValueAtTime(0.0001,now);
+    g.gain.exponentialRampToValueAtTime(soundOn?0.1:0.0001,now+0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+0.24);
+    o.connect(g); g.connect(AC.destination);
+    o.start(now); o.stop(now+0.26);
+  }
+  function startTelescope(free){
+    telescopeFreeJump=free;
+    clearInterval(telescopeTimer);
+    buildTelescopeField();
+    $('telescopeScreen').classList.add('open');
+    ensureAudio(); if(AC.state==='suspended') AC.resume();
+    playTelescopeAmbient();
+  }
+  window.startTelescope=startTelescope;
+  function stopTelescope(){
+    clearInterval(telescopeTimer);
+    $('telescopeScreen').classList.remove('open');
+  }
+  function openTelescopeConfirm(data){
+    pendingCloudYear=data.year;
+    $('tcYear').textContent=data.year;
+    $('tcTeaser').textContent=data.teaser;
+    $('telescopeConfirm').classList.add('open');
+  }
+  $('tcCancel').onclick=()=>{ $('telescopeConfirm').classList.remove('open'); pendingCloudYear=null; };
+  $('tcGo').onclick=async ()=>{
+    if(pendingCloudYear==null) return;
+    const year=pendingCloudYear;
+    pendingCloudYear=null;
+    $('telescopeConfirm').classList.remove('open');
+    stopTelescope();
+    const target=new Date(year, Math.floor(Math.random()*12), 1+Math.floor(Math.random()*27), Math.floor(Math.random()*24), Math.floor(Math.random()*60), 0, 0).getTime();
+    await executeJump(target, telescopeFreeJump);
+  };
+  $('telescopeManual').onclick=()=>{ stopTelescope(); openManualJumpForm(); };
+  $('telescopeSkip').onclick=()=>{ stopTelescope(); };
+
+  function scrambleClock(durationMs, waypoints){
+    return new Promise(res=>{
+      const hmEl=$('hm'), dateEl=$('clockDate'), start=performance.now();
+      if(!waypoints || !waypoints.length){
+        const step=()=>{
+          const t=performance.now()-start;
+          if(t>=durationMs){ res(); return; }
+          const rh=Math.floor(Math.random()*24), rm=Math.floor(Math.random()*60);
+          hmEl.textContent=pad(rh)+':'+pad(rm);
+          requestAnimationFrame(step);
+        };
+        step();
+        return;
+      }
+      const n=waypoints.length, per=durationMs/n;
+      let idx=-1;
+      const step=()=>{
+        const t=performance.now()-start;
+        if(t>=durationMs){ res(); return; }
+        const newIdx=Math.min(n-1,Math.floor(t/per));
+        if(newIdx!==idx){
+          idx=newIdx;
+          const d=new Date(waypoints[idx]);
+          hmEl.textContent=pad(d.getHours())+':'+pad(d.getMinutes());
+          dateEl.textContent=d.getDate()+' ב'+heMonL[d.getMonth()]+' '+d.getFullYear();
+          dateEl.classList.remove('waypointFlash'); void dateEl.offsetWidth; dateEl.classList.add('waypointFlash');
+        }
+        requestAnimationFrame(step);
+      };
+      step();
+    });
+  }
+  function buildJumpWaypoints(fromMs,target){
+    const span=target-fromMs;
+    if(span<=0) return [];
+    const fromJournal=journal.filter(j=>j.futureMs>fromMs&&j.futureMs<target).map(j=>j.futureMs);
+    for(let i=fromJournal.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [fromJournal[i],fromJournal[j]]=[fromJournal[j],fromJournal[i]]; }
+    const picked=fromJournal.slice(0,3);
+    const need=Math.max(0,6-picked.length);
+    for(let i=0;i<need;i++) picked.push(fromMs+Math.random()*span);
+    picked.sort((a,b)=>a-b);
+    return picked;
+  }
+  function playJumpSound(){
+    if(!AC) return;
+    const now=AC.currentTime;
+    // שכבה 1: מכה נמוכה ברגע הלחיצה — נותנת תחושת "אימפקט" מיידי
+    const bo=AC.createOscillator(), bg=AC.createGain();
+    bo.type='sine'; bo.frequency.setValueAtTime(95,now); bo.frequency.exponentialRampToValueAtTime(38,now+0.28);
+    bg.gain.setValueAtTime(0.0001,now);
+    bg.gain.exponentialRampToValueAtTime(soundOn?0.26:0.0001,now+0.012);
+    bg.gain.exponentialRampToValueAtTime(0.0001,now+0.32);
+    bo.connect(bg); bg.connect(AC.destination);
+    bo.start(now); bo.stop(now+0.34);
+    // שכבה 2: ה"וווש" היורד — מוגבר לעומת קודם
+    const o=AC.createOscillator(), g=AC.createGain(), f=AC.createBiquadFilter();
+    o.type='sawtooth'; f.type='lowpass'; f.frequency.setValueAtTime(5200,now);
+    f.frequency.exponentialRampToValueAtTime(180,now+1.1);
+    o.frequency.setValueAtTime(1100,now);
+    o.frequency.exponentialRampToValueAtTime(55,now+1.1);
+    g.gain.setValueAtTime(0.0001,now);
+    g.gain.exponentialRampToValueAtTime(soundOn?0.17:0.0001,now+0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+1.15);
+    o.connect(f);f.connect(g);g.connect(AC.destination);
+    o.start(now);o.stop(now+1.2);
+    // שכבה 3: צלצולים בהירים ומתכתיים שעולים בפרץ — כמו שער נפתח
+    if(soundOn){
+      [1760,2217,2794,3520].forEach((freq,i)=>{
+        const t0=now+0.06+i*0.085;
+        const b2=AC.createOscillator(), g2=AC.createGain();
+        b2.type='triangle'; b2.frequency.setValueAtTime(freq,t0);
+        g2.gain.setValueAtTime(0.0001,t0);
+        g2.gain.exponentialRampToValueAtTime(0.13,t0+0.015);
+        g2.gain.exponentialRampToValueAtTime(0.0001,t0+0.55);
+        b2.connect(g2); g2.connect(AC.destination);
+        b2.start(t0); b2.stop(t0+0.6);
+      });
+    }
+  }
+  async function executeJump(target,free){
+    const fromMs=myMs, fromReal=Date.now();
+    if(!free && budget<JUMP_COST_SEC){ alert('אין מספיק מכסה יומית לקפיצה (נדרשות כ-5 דקות)'); return; }
+    ensureAudio();
+    playJumpSound();
+    const flash=$('jumpFlash');
+    flash.classList.add('on');
+    $('clockEl').classList.add('scrambling');
+    const waypoints=buildJumpWaypoints(fromMs,target);
+    await scrambleClock(1200,waypoints);
+    // הנחיתה בפועל
+    myMs=target;
+    mode='ultra'; targetRate=ULTRA; rate=ULTRA; // ממשיכים לדהור באותה מהירות גם אחרי הנחיתה — כדי שהמרחק מהעולם ימשיך "לרוץ" ולא יקפא על מספר קבוע
+    driftStart=performance.now()-200000; // ההתעצמות כבר במלואה — זו הגעה, לא האצה הדרגתית
+    if(!free) budget=Math.max(0,budget-JUMP_COST_SEC);
+    document.querySelectorAll('#mainDial button, #camDial button').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('.bUltra').forEach(b=>b.classList.add('on'));
+    document.body.className='ultra';
+    jumpPalette=paletteForTarget(target);
+    const st=$('stateLine'); st.className='state fast';
+    st.textContent='נחתת בעתיד — והזמן שלך ממשיך לדהור משם והלאה.';
+    $('clockEl').classList.remove('scrambling');
+    flash.classList.remove('on'); flash.classList.add('fade');
+    setTimeout(()=>flash.classList.remove('fade'),950);
+    const yearsSkipped=Math.round((target-fromReal)/(365.25*86400000)*10)/10;
+    addJournalEntry('⚡ קפיצת זמן — הגעת ישירות אל '+fmtDateTime(target)+', דילגת קדימה כ-'+yearsSkipped+' שנים.', fromReal, fromMs);
+    showPredictionScreen();
+  }
+  $('jmGo').onclick=async ()=>{
+    const dv=$('jmDate').value, tv=$('jmTime').value||'12:00';
+    if(!dv){ $('jmErr').textContent='בחר תאריך יעד'; return; }
+    const [Y,Mo,Da]=dv.split('-').map(Number), [Hh,Mi]=tv.split(':').map(Number);
+    const target=new Date(Y,Mo-1,Da,Hh,Mi,0,0).getTime();
+    const floor=Math.max(Date.now(), myMs);
+    if(target<=floor){ $('jmErr').textContent='אפשר לקפוץ רק קדימה מהרגע הנוכחי שלך'; return; }
+    if(budget<JUMP_COST_SEC){ $('jmErr').textContent='אין מספיק מכסה יומית לקפיצה (נדרשות כ-5 דקות)'; return; }
+    $('jumpModal').classList.remove('open');
+    await executeJump(target,false);
+  };
+
+})();
+</script>
+<script>
+(function(){
+  var hint=document.getElementById('scrollHint');
+  var FOOTER_CLEARANCE=220;
+  function check(){
+    var doc=document.documentElement;
+    var scrollable = doc.scrollHeight - window.innerHeight > FOOTER_CLEARANCE + 10;
+    var nearBottom = window.scrollY + window.innerHeight >= doc.scrollHeight - FOOTER_CLEARANCE;
+    hint.classList.toggle('show', scrollable && !nearBottom);
+  }
+  window.addEventListener('scroll', check, {passive:true});
+  window.addEventListener('resize', check);
+  setInterval(check, 700);
+  check();
+})();
+</script>
+</body>
+</html>
