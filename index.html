@@ -1003,7 +1003,7 @@
     <div class="lcBgIcon" id="lcBgIcon"></div>
     <div class="lcBgTextWrap">
       <div class="lcBgText" id="lcBgText"></div>
-      <div class="lcBgCta">רוצה לשמוע עוד מהעתיד? הצטרפו למסע — time3machine.netlify.app</div>
+      <div class="lcBgCta">רוצה לשמוע עוד? הצטרף למסע — time3machine.netlify.app</div>
     </div>
   </div>
   <div class="lcTopicImg" id="lcTopicImg" style="display:none"><img id="lcTopicImgEl" alt=""></div>
@@ -1023,7 +1023,7 @@
     <div class="pcDateTag" id="pcDateTag"></div>
     <div class="pcDistance" id="pcDistance"></div>
     <div class="pcCaption" id="pcCaption"></div>
-    <div class="pcCta">רוצה לשמוע עוד מהעתיד? הצטרפו למסע — time3machine.netlify.app</div>
+    <div class="pcCta">רוצה לשמוע עוד? הצטרף למסע — time3machine.netlify.app</div>
     <div class="pcSeal" id="pcSeal"></div>
     <div class="pcFoot">
       <div class="pcFootLine"></div>
@@ -1749,7 +1749,7 @@
   async function tryAiSelfie(t,targetYear,blob){
     try{
       const base64=await blobToBase64(blob);
-      const prompt='ערוך את התמונה המצורפת: שמור על פני האדם בתמונה ברורים, מוכרים ובמרכז הפריים, אך צייר אותו/ה מחדש בתוך סצנה מאוירת (לא פוטוריאליסטית) המתארת "'+t.title+'" בעולם של שנת '+targetYear+'. סגנון אמנותי-עתידני, גוונים סביב הצבע '+t.accent+', קומפוזיציה פורטרטית (לאורך), ללא טקסט בתמונה.';
+      const prompt='ערוך את התמונה המצורפת: שמור על פני האדם בתמונה ברורים, מוכרים ובמרכז הפריים, אך צייר אותו/ה מחדש בתוך סצנה מאוירת (לא פוטוריאליסטית) המתארת "'+t.title+'" בעולם של שנת '+targetYear+'. חשוב: התוצאה צריכה להיות מרשימה, דרמטית ומגניבה ויזואלית — קומפוזיציה נועזת, תאורה אטמוספרית, עומק ופרטים עשירים ברקע — לא איור שטוח או גנרי. סגנון אמנותי-עתידני איכותי (ברמת קונספט-ארט של קולנוע מדע בדיוני), גוונים סביב הצבע '+t.accent+', קומפוזיציה פורטרטית (לאורך), ללא טקסט בתמונה.';
       const res=await fetch('/.netlify/functions/generate-image',{
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({prompt, image:base64, mimeType: blob.type||'image/jpeg'})
@@ -1911,10 +1911,7 @@
     maybeBurst(now/1000);
     applyIntensityStyling();
 
-    if(Math.abs(targetRate-1)>0.01 && budget>0){
-      budget-=dt*(mode==='ultra'?2.2:1);
-      if(budget<=0){budget=0;setMode('norm');}
-    }
+    // מכסת הזמן היומית הוסרה מהתצוגה ומהשימוש — לא מרוקנים ולא מאפסים מצב באופן אוטומטי יותר
 
     drawWorldFace();
     updateDrone();
