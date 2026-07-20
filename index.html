@@ -239,10 +239,6 @@
   .camDial .bUltra.on{background:#6B4FD8;border-color:transparent}
   .camDial .bNorm.on{background:#0005;border-color:#fff3}
   .camDial .bFast.on{background:var(--blue);border-color:transparent}
-  .camSync{
-    align-self:center;font-family:'Heebo';font-size:12px;color:#fffc;
-    background:none;border:none;border-bottom:1px dotted #fff8;padding:2px 2px 3px;
-  }
   .camRow{display:flex;justify-content:space-around;align-items:center}
   .shutter{width:70px;height:70px;border-radius:50%;border:4px solid #fff;background:#fff;box-shadow:0 0 0 3px #0006;touch-action:none}
   .shutter:active{transform:scale(.92)}
@@ -888,7 +884,6 @@
       <button class="bFast">זירוז</button>
       <button class="bUltra">דילוג</button>
     </div>
-    <button class="camSync" id="camSync">התיישרות עם העולם — חזרה להווה</button>
     <div class="camHint">📸 הקשה על העיגול הלבן לצילום</div>
     <div class="camRow">
       <button class="flipBtn" id="flipCam">⟲</button>
@@ -1289,7 +1284,6 @@
   const syncNow=()=>{ myMs = Date.now(); };
   $('gap').addEventListener('click',syncNow);
   $('syncBtn').addEventListener('click',syncNow);
-  $('camSync').addEventListener('click',()=>{ syncNow(); setMode('norm'); });
 
   /* ----- שעון עולם אנלוגי ----- */
   const wf=$('worldFace'), wctx=wf.getContext('2d');
