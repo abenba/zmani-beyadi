@@ -405,6 +405,17 @@
   .pcFootLine{width:50px;height:1px;background:rgba(255,255,255,.4);margin:0 auto 10px}
   .pcFootBrand{font-family:'Frank Ruhl Libre',serif;font-size:13px;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.06em}
   .pcFootCta{font-size:10px;font-weight:700;color:rgba(255,255,255,.7);margin-top:6px}
+  #aiGenOverlay{
+    position:fixed;inset:0;z-index:35;display:none;place-items:center;
+    background:rgba(6,9,14,.9);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+  #aiGenOverlay.open{display:grid}
+  .aiGenBox{display:flex;flex-direction:column;align-items:center;gap:16px;color:#fff}
+  .aiGenSpin{
+    width:46px;height:46px;border-radius:50%;border:3px solid rgba(255,255,255,.2);
+    border-top-color:#8B6FE8;animation:aiGenSpin .9s linear infinite}
+  @keyframes aiGenSpin{to{transform:rotate(360deg)}}
+  .aiGenText{font-family:'Heebo';font-size:13.5px;font-weight:700;color:#DCD6EA}
+
   #postcardSendModal{
     position:fixed;inset:0;z-index:60;display:none;place-items:center;
     background:rgba(10,14,20,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:20px}
@@ -1015,6 +1026,13 @@
       <div class="pcFootBrand">משחקי זמן</div>
       <div class="pcFootCta">רוצה להצטרף? time3machine.netlify.app</div>
     </div>
+  </div>
+</div>
+
+<div id="aiGenOverlay">
+  <div class="aiGenBox">
+    <div class="aiGenSpin"></div>
+    <div class="aiGenText">מציירים אותך בעתיד…</div>
   </div>
 </div>
 
@@ -1714,21 +1732,51 @@
 
   /* ---------- גלויית סלפי: התמונה שלך על רקע העולם העתידי שנצפה לאותה תקופה ---------- */
   let postcardBlob=null, postcardFileName='';
+  function blobToBase64(blob){
+    return new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onloadend=()=>{ resolve(String(reader.result).split(',')[1]); };
+      reader.onerror=reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+  async function tryAiSelfie(t,targetYear,blob){
+    try{
+      const base64=await blobToBase64(blob);
+      const prompt='ערוך את התמונה המצורפת: שמור על פני האדם בתמונה ברורים, מוכרים ובמרכז הפריים, אך צייר אותו/ה מחדש בתוך סצנה מאוירת (לא פוטוריאליסטית) המתארת "'+t.title+'" בעולם של שנת '+targetYear+'. סגנון אמנותי-עתידני, גוונים סביב הצבע '+t.accent+', קומפוזיציה פורטרטית (לאורך), ללא טקסט בתמונה.';
+      const res=await fetch('/.netlify/functions/generate-image',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({prompt, image:base64, mimeType: blob.type||'image/jpeg'})
+      });
+      const data=await res.json();
+      if(!res.ok || !data.image) return null;
+      return 'data:'+(data.mimeType||'image/png')+';base64,'+data.image;
+    }catch(e){ return null; }
+  }
   async function generatePostcard(){
     if(!lastBlob) return;
-    const url=URL.createObjectURL(lastBlob);
     const d=new Date(lastFutureMs);
     const targetYear=d.getFullYear();
     const yearsAhead=targetYear-new Date().getFullYear();
     const key=keyForTarget(targetYear,yearsAhead);
+    let photoUrl=URL.createObjectURL(lastBlob);
     if(selectedPerkTopicId){
       const t=ENCY_TOPICS.find(x=>x.id===selectedPerkTopicId);
       const bucket=bucketForYears(Math.min(100,Math.max(1,yearsAhead)));
       const entry=encyEntry(selectedPerkTopicId,bucket);
+      shot.classList.remove('open');
+      $('aiGenOverlay').classList.add('open');
+      const aiUrl=await tryAiSelfie(t,targetYear,lastBlob);
+      $('aiGenOverlay').classList.remove('open');
       $('pcBg').style.background=`linear-gradient(165deg, ${t.accent}, #0B0E14 78%)`;
       $('pcBg').innerHTML='';
-      $('pcTopicIcon').innerHTML=buildEncyIllustration(t.motif,t.accent);
-      $('pcTopicIcon').style.display='block';
+      if(aiUrl){
+        photoUrl=aiUrl;
+        $('pcTopicIcon').style.display='none';
+      }else{
+        $('pcTopicIcon').innerHTML=buildEncyIllustration(t.motif,t.accent);
+        $('pcTopicIcon').style.display='block';
+      }
       $('pcCaption').textContent=entry.teaser+' '+entry.body.split('\n\n')[0];
       selectedPerkTopicId=null;
     }else{
@@ -1745,9 +1793,9 @@
       await new Promise((resolve,reject)=>{
         const pre=new Image();
         pre.onload=resolve; pre.onerror=reject;
-        pre.src=url;
+        pre.src=photoUrl;
       });
-      $('pcPhotoFrame').style.backgroundImage='url('+url+')';
+      $('pcPhotoFrame').style.backgroundImage='url('+photoUrl+')';
       await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
       const canvas=await html2canvas($('postcardCard'),{backgroundColor:null,scale:2,useCORS:true});
       canvas.toBlob(blob=>{ if(blob) showPostcardSend(blob); },'image/png',0.95);
