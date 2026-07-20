@@ -383,7 +383,7 @@
     overflow:hidden;border-radius:4px}
   .pcBg{position:absolute;inset:0}
   .pcBg svg{position:absolute;inset:0;width:100%;height:100%}
-  .pcTopicIcon{width:170px;height:170px;margin:6px auto 0;opacity:.85}
+  .pcTopicIcon{width:280px;height:280px;margin:2px auto -30px;opacity:1;filter:drop-shadow(0 8px 24px rgba(0,0,0,.35))}
   .pcTopicIcon svg{width:100%;height:100%;display:block}
   .pcContent{position:relative;z-index:1;padding:44px 34px 36px}
   .pcTitle{
@@ -1652,18 +1652,10 @@
       // מרחק מצטבר (בלוג): כמה רחוק כבר נסעת בסשן הזה, ללא תלות במהירות הרגעית
       const distanceT=clamp01(Math.log(1+(-gapSec)/60)/Math.log(1+1440))*CAM_FUTURE_CLARITY;
       const tintR=lerp(62,98,distanceT), tintG=lerp(123,64,distanceT), tintB=lerp(190,190,distanceT);
-      // הבזק מידע: ברגעים נדירים (תדירותם עולה עם ההתעצמות) העולם מתחדד לרגע
-      const burstPhase=(Math.sin(now/1000*lerp(0.4,2.2,intensity))+1)/2;
-      const burstSharp=intensity>0.15 && burstPhase>0.94 ? (burstPhase-0.94)/0.06 : 0;
-      if(burstSharp>0.85 && now-lastNotifyAt>2500){ lastNotifyAt=now; playNotify(); }
-      tctx.globalAlpha=lerp(0.5,0.055,amt)*(1-burstSharp*0.7)*CAM_FUTURE_CLARITY;
+      tctx.globalAlpha=lerp(0.5,0.055,amt)*CAM_FUTURE_CLARITY;
       coverDraw(tctx,tctx.globalAlpha);
       tctx.globalAlpha=1;
       cctx.drawImage(trail,0,0);
-      if(burstSharp>0){
-        coverDraw(cctx, burstSharp*0.5);
-        cctx.fillStyle=`rgba(255,255,255,${burstSharp*burstSharp*0.5})`; cctx.fillRect(0,0,w,h);
-      }
       // ריצוד-דהייה (streak): ככל שהמרחק גדל, נוצר כפל-דמות עדין כאילו העולם נמרח מהמהירות
       if(distanceT>0.05){
         cctx.save();
