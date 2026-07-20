@@ -1144,13 +1144,8 @@
   }
   function updateDrone(){
     if(!AC||!droneGain) return;
-    // מוזיקת רקע עתידנית ורגועה — אקורד קבוע ויציב, לא רעש שמתחזק עם המהירות
-    const level = soundOn ? 0.045 : 0;
-    droneGain.gain.setTargetAtTime(level, AC.currentTime, 1.2);
-    const root = mode==='ultra' ? 82 : mode==='fast' ? 87 : 92; // גוון שונה במעט לפי המצב, בלי קשר למהירות הרגעית
-    droneOsc.frequency.setTargetAtTime(root, AC.currentTime, 1.5);
-    droneOsc2.frequency.setTargetAtTime(root*1.5, AC.currentTime, 1.5); // חמישית
-    droneOsc3.frequency.setTargetAtTime(root*2.01, AC.currentTime, 1.5); // אוקטבה, מעט מפורטת
+    // הוסר לגמרי — כל צליל רקע מתמשך גרם לתלונות חזרתיות; נשארים רק צלילי-רגע (קפיצה, הקשות)
+    droneGain.gain.setTargetAtTime(0, AC.currentTime, 0.6);
   }
   /* הבזק מידע — בעתיד בלבד, תדירותו וחדותו גדלות עם ההתעצמות */
   let nextBurstAt=0, lastNotifyAt=0;
