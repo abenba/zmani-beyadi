@@ -1102,25 +1102,12 @@
   const rateT=()=> rate<=1 ? 0.5 : clamp01(0.5 + 0.5*Math.log(rate)/Math.log(ULTRA));
 
   /* ================= קול ================= */
-  let AC=null, soundOn=true, droneOsc=null, droneOsc2=null, droneOsc3=null, droneGain=null, droneFilter=null, droneLFO=null, droneLFOGain=null, tickSide=false;
+  let AC=null, soundOn=true, tickSide=false;
   let recDest=null, micGainNode=null;
   function ensureAudio(){
     if(AC) return;
     AC = new (window.AudioContext||window.webkitAudioContext)();
     recDest = AC.createMediaStreamDestination();
-    droneGain = AC.createGain(); droneGain.gain.value = 0;
-    droneFilter = AC.createBiquadFilter(); droneFilter.type='lowpass'; droneFilter.frequency.value=900; droneFilter.Q.value=0.6;
-    droneOsc = AC.createOscillator(); droneOsc.type='triangle';
-    droneOsc2 = AC.createOscillator(); droneOsc2.type='sine';
-    droneOsc3 = AC.createOscillator(); droneOsc3.type='sine';
-    droneOsc.connect(droneFilter); droneOsc2.connect(droneFilter); droneOsc3.connect(droneFilter);
-    droneFilter.connect(droneGain);
-    droneGain.connect(AC.destination);
-    droneOsc.start(); droneOsc2.start(); droneOsc3.start();
-    droneLFO = AC.createOscillator(); droneLFO.type='sine'; droneLFO.frequency.value=0.06;
-    droneLFOGain = AC.createGain(); droneLFOGain.gain.value=140;
-    droneLFO.connect(droneLFOGain); droneLFOGain.connect(droneFilter.frequency);
-    droneLFO.start();
   }
   window.unlockAudio=function(){
     ensureAudio();
@@ -1142,11 +1129,7 @@
     g.connect(AC.destination);
     osc.start(now); osc.stop(now+dur+0.02);
   }
-  function updateDrone(){
-    if(!AC||!droneGain) return;
-    // הוסר לגמרי — כל צליל רקע מתמשך גרם לתלונות חזרתיות; נשארים רק צלילי-רגע (קפיצה, הקשות)
-    droneGain.gain.setTargetAtTime(0, AC.currentTime, 0.6);
-  }
+  function updateDrone(){ /* המנגנון הוסר לגמרי — לא נותר שום דבר מתמשך שיכול לנגן */ }
   /* הבזק מידע — בעתיד בלבד, תדירותו וחדותו גדלות עם ההתעצמות */
   let nextBurstAt=0, lastNotifyAt=0;
   /* צליל התראה חד — נשמע ברגעי החידוד השיאיים (חיקוי הבזק "מסר הגיע") */
