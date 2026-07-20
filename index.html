@@ -364,13 +364,14 @@
   .lcBgIcon{width:44px;height:44px;flex-shrink:0}
   .lcBgIcon svg{width:100%;height:100%;display:block}
   .lcBgText{font-family:'Heebo';font-size:12.5px;font-weight:700;color:#7A6B42;line-height:1.6}
+  .lcBgTextWrap{display:flex;flex-direction:column;gap:7px}
+  .lcBgCta{font-family:'Heebo';font-size:10px;font-weight:700;color:#A5762B}
   .lcBgText::before{content:'רקע — ';font-weight:800;color:#A5762B}
   .lcBody{font-family:'Frank Ruhl Libre',serif;font-weight:400;font-size:17.5px;line-height:1.95;color:#2A2416;white-space:pre-wrap;min-height:90px;text-align:right}
   .lcFoot{margin-top:32px}
   .lcFootLine{width:60px;height:1px;background:#C9B888;margin:0 auto 14px}
   .lcFootBrand{font-family:'Frank Ruhl Libre',serif;font-size:14px;font-weight:700;color:#7A6B42;letter-spacing:.08em}
   .lcFootTag{font-size:10.5px;color:#A79868;margin-top:3px}
-  .lcFootCta{font-size:10.5px;font-weight:700;color:#8B6F2E;margin-top:8px}
   .lcSeal{
     display:inline-flex;align-items:center;gap:6px;margin:-8px auto 22px;
     font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:#8A6F2A;
@@ -399,12 +400,12 @@
     background:rgba(0,0,0,.32);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
     border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:8px 18px}
   .pcCaption{margin-top:14px;font-family:'Frank Ruhl Libre',serif;font-size:16px;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+  .pcCta{margin-top:10px;font-family:'Heebo';font-size:10.5px;font-weight:700;color:rgba(255,255,255,.75)}
   .pcDistance{margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#D8CBFF;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.5)}
   .pcSeal{margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,.7);letter-spacing:.05em}
   .pcFoot{margin-top:22px}
   .pcFootLine{width:50px;height:1px;background:rgba(255,255,255,.4);margin:0 auto 10px}
   .pcFootBrand{font-family:'Frank Ruhl Libre',serif;font-size:13px;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.06em}
-  .pcFootCta{font-size:10px;font-weight:700;color:rgba(255,255,255,.7);margin-top:6px}
   #aiGenOverlay{
     position:fixed;inset:0;z-index:35;display:none;place-items:center;
     background:rgba(6,9,14,.9);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
@@ -1000,14 +1001,16 @@
   <div class="lcBody" id="lcBody"></div>
   <div class="lcBackground" id="lcBackground" style="display:none">
     <div class="lcBgIcon" id="lcBgIcon"></div>
-    <div class="lcBgText" id="lcBgText"></div>
+    <div class="lcBgTextWrap">
+      <div class="lcBgText" id="lcBgText"></div>
+      <div class="lcBgCta">רוצה לשמוע עוד מהעתיד? הצטרפו למסע — time3machine.netlify.app</div>
+    </div>
   </div>
   <div class="lcTopicImg" id="lcTopicImg" style="display:none"><img id="lcTopicImgEl" alt=""></div>
   <div class="lcFoot">
     <div class="lcFootLine"></div>
     <div class="lcFootBrand">משחקי זמן</div>
     <div class="lcFootTag">כלי אישי למסע בזמן</div>
-    <div class="lcFootCta">רוצה להצטרף? time3machine.netlify.app</div>
   </div>
 </div>
 
@@ -1020,11 +1023,11 @@
     <div class="pcDateTag" id="pcDateTag"></div>
     <div class="pcDistance" id="pcDistance"></div>
     <div class="pcCaption" id="pcCaption"></div>
+    <div class="pcCta">רוצה לשמוע עוד מהעתיד? הצטרפו למסע — time3machine.netlify.app</div>
     <div class="pcSeal" id="pcSeal"></div>
     <div class="pcFoot">
       <div class="pcFootLine"></div>
       <div class="pcFootBrand">משחקי זמן</div>
-      <div class="pcFootCta">רוצה להצטרף? time3machine.netlify.app</div>
     </div>
   </div>
 </div>
@@ -1099,20 +1102,25 @@
   const rateT=()=> rate<=1 ? 0.5 : clamp01(0.5 + 0.5*Math.log(rate)/Math.log(ULTRA));
 
   /* ================= קול ================= */
-  let AC=null, soundOn=true, droneOsc=null, droneOsc2=null, droneGain=null, droneFilter=null, tickSide=false;
+  let AC=null, soundOn=true, droneOsc=null, droneOsc2=null, droneOsc3=null, droneGain=null, droneFilter=null, droneLFO=null, droneLFOGain=null, tickSide=false;
   let recDest=null, micGainNode=null;
   function ensureAudio(){
     if(AC) return;
     AC = new (window.AudioContext||window.webkitAudioContext)();
     recDest = AC.createMediaStreamDestination();
     droneGain = AC.createGain(); droneGain.gain.value = 0;
-    droneFilter = AC.createBiquadFilter(); droneFilter.type='lowpass'; droneFilter.frequency.value=600;
+    droneFilter = AC.createBiquadFilter(); droneFilter.type='lowpass'; droneFilter.frequency.value=900; droneFilter.Q.value=0.6;
     droneOsc = AC.createOscillator(); droneOsc.type='triangle';
     droneOsc2 = AC.createOscillator(); droneOsc2.type='sine';
-    droneOsc.connect(droneFilter); droneOsc2.connect(droneFilter);
+    droneOsc3 = AC.createOscillator(); droneOsc3.type='sine';
+    droneOsc.connect(droneFilter); droneOsc2.connect(droneFilter); droneOsc3.connect(droneFilter);
     droneFilter.connect(droneGain);
     droneGain.connect(AC.destination);
-    droneOsc.start(); droneOsc2.start();
+    droneOsc.start(); droneOsc2.start(); droneOsc3.start();
+    droneLFO = AC.createOscillator(); droneLFO.type='sine'; droneLFO.frequency.value=0.06;
+    droneLFOGain = AC.createGain(); droneLFOGain.gain.value=140;
+    droneLFO.connect(droneLFOGain); droneLFOGain.connect(droneFilter.frequency);
+    droneLFO.start();
   }
   window.unlockAudio=function(){
     ensureAudio();
@@ -1136,15 +1144,13 @@
   }
   function updateDrone(){
     if(!AC||!droneGain) return;
-    const t=rateT();
-    const off = Math.abs(t-0.5)*2;
-    // בעבר: זרם מתמשך ורך שמתחזק עם ההתעצמות. בעתיד: קו דק בין הבזקים.
-    const level = (t<0.5 ? off*0.07 : off*0.014) * intensity;
-    droneGain.gain.setTargetAtTime(soundOn ? level : 0, AC.currentTime, 0.8);
-    const f = t<0.5 ? lerp(68,50,(0.5-t)*2) : lerp(120,215,(t-0.5)*2);
-    droneOsc.frequency.setTargetAtTime(f, AC.currentTime, 0.5);
-    droneOsc2.frequency.setTargetAtTime(f*1.505, AC.currentTime, 0.5);
-    droneFilter.frequency.setTargetAtTime(lerp(420,1600,t), AC.currentTime, 0.5);
+    // מוזיקת רקע עתידנית ורגועה — אקורד קבוע ויציב, לא רעש שמתחזק עם המהירות
+    const level = soundOn ? 0.045 : 0;
+    droneGain.gain.setTargetAtTime(level, AC.currentTime, 1.2);
+    const root = mode==='ultra' ? 82 : mode==='fast' ? 87 : 92; // גוון שונה במעט לפי המצב, בלי קשר למהירות הרגעית
+    droneOsc.frequency.setTargetAtTime(root, AC.currentTime, 1.5);
+    droneOsc2.frequency.setTargetAtTime(root*1.5, AC.currentTime, 1.5); // חמישית
+    droneOsc3.frequency.setTargetAtTime(root*2.01, AC.currentTime, 1.5); // אוקטבה, מעט מפורטת
   }
   /* הבזק מידע — בעתיד בלבד, תדירותו וחדותו גדלות עם ההתעצמות */
   let nextBurstAt=0, lastNotifyAt=0;
