@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>משחקי זמן</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800&family=IBM+Plex+Mono:wght@300;500;700&family=Caveat:wght@500&family=Rubik:wght@400&family=Frank+Ruhl+Libre:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800&family=IBM+Plex+Mono:wght@300;500;700&family=Caveat:wght@500&family=Rubik:wght@400;500;600&family=Frank+Ruhl+Libre:wght@400;500;700&family=Secular+One&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#EEF1F4; --ink:#1B2430; --ink-soft:#5A6572;
@@ -517,12 +517,15 @@
   .encyIntro{max-width:340px;margin-top:26px;font-size:13px;font-weight:700;color:#B9E3D6}
   .predCredit{font-size:11px;color:#B9BFCB;line-height:1.7;max-width:300px;margin:12px auto 20px}
   .predCard{
-    max-width:340px;background:rgba(10,14,20,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
-    border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:18px 20px;color:#F2F0F7;text-align:right}
-  .predRow{padding:10px 0;border-top:1px solid rgba(255,255,255,.1)}
-  .predRow:first-child{border-top:none;padding-top:2px}
-  .predRow b{display:block;font-family:'Heebo';font-size:11.5px;font-weight:800;letter-spacing:.05em;color:#C9BCF2;margin-bottom:4px}
-  .predRow span{display:block;font-size:14.5px;font-weight:500;line-height:1.75;color:#FFFFFF}
+    max-width:340px;display:flex;flex-direction:column;gap:12px;color:#F2F0F7;text-align:right}
+  .predRow{
+    background:rgba(20,26,38,.6);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+    border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:14px 16px}
+  .predRow b{display:block;font-family:'Secular One',sans-serif;font-size:13px;font-weight:400;letter-spacing:.03em;color:#8FE3D6;margin-bottom:7px;text-shadow:0 0 12px rgba(143,227,214,.55)}
+  .predRow b::before{content:'▸ '}
+  .predRow span{display:block;font-family:'Rubik',sans-serif;font-size:15px;font-weight:400;line-height:1.85;letter-spacing:.005em;color:#FFFFFF}
+  .predRow b::before{content:'▸ '}
+  .predRow span{display:block;font-family:'Heebo';font-size:15px;font-weight:500;line-height:1.85;letter-spacing:.005em;color:#FFFFFF}
   .predActs{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap;justify-content:center}
   .predActs button{
     font-family:'Heebo';font-size:12.5px;font-weight:700;color:#fff;
@@ -780,7 +783,7 @@
     <div class="predCard" id="predCard"></div>
     <div class="predActs">
       <button id="predToLetter">✍️ כתוב איגרת מן העתיד</button>
-      <button id="predToCam">📷 צור תמונה מהעתיד</button>
+      <button id="predToCam">📷 צור סלפי/תמונה מהעתיד</button>
     </div>
     <div class="encyIntro" id="encyIntro" style="display:none">רוצה להעמיק? גע/י במקש המתאים</div>
     <div class="encyGrid" id="encyGrid" style="display:none"></div>
@@ -903,7 +906,7 @@
     <a id="saveShot" download>שמירה</a>
     <button id="closeShot">סגירה</button>
   </div>
-  <button id="makePostcard" style="display:none">📷 צור תמונה מהעתיד</button>
+  <button id="makePostcard" style="display:none">📷 צור סלפי/תמונה מהעתיד</button>
   <div class="hint">התוצר נחתם בזמן שלך ובפער מהעולם</div>
 </div>
 
@@ -1030,7 +1033,7 @@
 <div id="aiGenOverlay">
   <div class="aiGenBox">
     <div class="aiGenSpin"></div>
-    <div class="aiGenText">מציירים אותך בעתיד…</div>
+    <div class="aiGenText" id="aiGenText">מציירים אותך בעתיד…</div>
   </div>
 </div>
 
@@ -1717,6 +1720,7 @@
       const bucket=bucketForYears(Math.min(100,Math.max(1,yearsAhead)));
       const entry=encyEntry(selectedPerkTopicId,bucket);
       shot.classList.remove('open');
+      $('aiGenText').textContent = facing==='user' ? 'מציירים אותך בעתיד…' : 'מציירים תמונה בעתיד…';
       $('aiGenOverlay').classList.add('open');
       const aiUrl=await tryAiSelfie(t,targetYear,lastBlob);
       $('aiGenOverlay').classList.remove('open');
