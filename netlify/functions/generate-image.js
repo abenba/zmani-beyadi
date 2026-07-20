@@ -1,5 +1,6 @@
 // netlify/functions/generate-image.js
 // שומר את מפתח ה-API בצד השרת בלבד (משתנה סביבה ב-Netlify), לא בקוד הגלוי לדפדפן.
+// תומך בשני מצבים: טקסט-בלבד (רקע לאיגרת) וטקסט+תמונת קלט (עריכת סלפי — המשתמש במרכז הצילום).
 
 exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
@@ -11,17 +12,28 @@ exports.handler = async function (event) {
     return { statusCode: 500, body: JSON.stringify({ error: 'GEMINI_API_KEY לא מוגדר בהגדרות הסביבה של Netlify' }) };
   }
 
-  let prompt;
+  let prompt, imageBase64, imageMimeType;
   try {
     const body = JSON.parse(event.body || '{}');
     prompt = body.prompt;
+    imageBase64 = body.image || null;
+    imageMimeType = body.mimeType || 'image/jpeg';
   } catch (e) {
     return { statusCode: 400, body: JSON.stringify({ error: 'גוף בקשה לא תקין' }) };
   }
 
-  if (!prompt || typeof prompt !== 'string' || prompt.length > 600) {
+  if (!prompt || typeof prompt !== 'string' || prompt.length > 900) {
     return { statusCode: 400, body: JSON.stringify({ error: 'prompt חסר או ארוך מדי' }) };
   }
+  if (imageBase64 && (typeof imageBase64 !== 'string' || imageBase64.length > 8000000)) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'קובץ תמונת קלט לא תקין או גדול מדי' }) };
+  }
+
+  const parts = [];
+  if (imageBase64) {
+    parts.push({ inlineData: { mimeType: imageMimeType, data: imageBase64 } });
+  }
+  parts.push({ text: prompt });
 
   try {
     const resp = await fetch(
@@ -33,7 +45,7 @@ exports.handler = async function (event) {
           'x-goog-api-key': apiKey
         },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
+          contents: [{ parts }]
         })
       }
     );
@@ -47,8 +59,8 @@ exports.handler = async function (event) {
       };
     }
 
-    const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
-    const imagePart = parts.find(p => p.inlineData && p.inlineData.data);
+    const outParts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
+    const imagePart = outParts.find(p => p.inlineData && p.inlineData.data);
 
     if (!imagePart) {
       return { statusCode: 502, body: JSON.stringify({ error: 'לא התקבלה תמונה מהמודל' }) };
