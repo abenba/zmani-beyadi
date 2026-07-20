@@ -253,9 +253,6 @@
   .zoomBtn{width:54px;height:54px;border-radius:50%;border:1px solid #fff4;background:#0006;color:#fff;
     font-family:'IBM Plex Mono',monospace;font-size:15px;direction:ltr}
   .zoomBtn.z2{background:#fff;color:#111;border-color:transparent}
-  .recTime{position:absolute;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%);
-    z-index:2;color:#fff;background:#E4453A;font-family:'IBM Plex Mono';font-size:13px;
-    padding:3px 12px;border-radius:99px;display:none;direction:ltr}
 
   #shot{position:fixed;inset:0;background:#000;z-index:30;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px}
   #shot.open{display:flex}
@@ -343,7 +340,7 @@
     content:'';position:absolute;inset:14px;border:1px solid #C9B888;border-radius:2px;pointer-events:none}
   #letterCard::after{
     content:'';position:absolute;inset:19px;border:1px solid rgba(184,147,63,.35);border-radius:1px;pointer-events:none}
-  .lcOrnament{width:88px;height:88px;margin:0 auto 14px}
+  .lcOrnament{width:176px;height:176px;margin:0 auto 14px}
   .lcTitle{font-family:'Frank Ruhl Libre',serif;font-size:30px;font-weight:700;color:#2A2416;margin-bottom:10px;letter-spacing:.02em}
   .lcWhen{
     margin-bottom:22px;padding:14px 18px;border-radius:10px;
@@ -784,6 +781,7 @@
     <div class="predActs">
       <button id="predToLetter">✍️ כתוב איגרת מן העתיד</button>
       <button id="predToCam">🤳 צור סלפי מהעתיד</button>
+      <button id="predToPlainCam">📷 צילום רגיל</button>
     </div>
     <div class="encyIntro" id="encyIntro" style="display:none">רוצה להעמיק? גע/י במקש המתאים</div>
     <div class="encyGrid" id="encyGrid" style="display:none"></div>
@@ -881,7 +879,6 @@
     </div>
   </div>
   <div class="lensCaption" id="lensCaption"></div>
-  <div class="recTime" id="recTime">● 0:00</div>
   <div class="camMsg" id="camMsg"></div>
   <div class="camBottom">
     <div class="camDial" id="camDial">
@@ -890,11 +887,10 @@
       <button class="bUltra">דילוג</button>
     </div>
     <button class="camSync" id="camSync">התיישרות עם העולם — חזרה להווה</button>
-    <div class="camHint">📸 הקשה קלה על העיגול הלבן = תמונה &nbsp;·&nbsp; החזקה = חשיפת 5 שניות &nbsp;·&nbsp; 🔴 = הקלטת וידאו (הקשה נוספת לעצירה ולשמירה)</div>
+    <div class="camHint">📸 הקשה על העיגול הלבן לצילום</div>
     <div class="camRow">
       <button class="flipBtn" id="flipCam">⟲</button>
       <div class="camBtnCol"><button class="shutter" id="snap" aria-label="צילום"></button><small>תמונה</small></div>
-      <div class="camBtnCol"><button class="recBtn" id="rec" aria-label="וידאו"><i></i></button><small>וידאו</small></div>
       <button class="zoomBtn" id="zoomBtn">1x</button>
     </div>
   </div>
@@ -980,15 +976,15 @@
         <linearGradient id="lcGoldG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F0CD82"/><stop offset="1" stop-color="#A5762B"/></linearGradient>
       </defs>
       <circle cx="60" cy="60" r="52" fill="url(#lcBgG)" stroke="url(#lcGoldG)" stroke-width="2.5"/>
-      <g stroke="url(#lcGoldG)" fill="none" stroke-linecap="round">
-        <path d="M 60 20 A 40 40 0 0 1 98 55" stroke-width="4"/>
-        <path d="M 92 84 A 30 30 0 0 1 40 84" stroke-width="3.5" opacity=".75"/>
-        <path d="M 34 44 A 22 22 0 0 1 74 50" stroke-width="3" opacity=".6"/>
+      <g stroke="url(#lcGoldG)" opacity=".55" stroke-linecap="round">
+        <line x1="26" y1="46" x2="40" y2="46" stroke-width="3"/>
+        <line x1="21" y1="60" x2="39" y2="60" stroke-width="3.5"/>
+        <line x1="26" y1="74" x2="40" y2="74" stroke-width="3"/>
       </g>
-      <circle cx="60" cy="60" r="14" fill="url(#lcGoldG)" opacity=".3"/>
-      <circle cx="60" cy="60" r="4" fill="#7A5A1E"/>
-      <line x1="60" y1="60" x2="60" y2="34" stroke="#7A5A1E" stroke-width="3" stroke-linecap="round"/>
-      <line x1="60" y1="60" x2="78" y2="68" stroke="#7A5A1E" stroke-width="3" stroke-linecap="round"/>
+      <path d="M 46 32 L 78 60 L 46 88" fill="none" stroke="url(#lcGoldG)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="90" cy="38" r="2.6" fill="#7A5A1E"/>
+      <circle cx="95" cy="55" r="1.7" fill="#7A5A1E" opacity=".7"/>
+      <circle cx="88" cy="70" r="1.4" fill="#7A5A1E" opacity=".55"/>
     </svg>
   </div>
   <div class="lcTitle">איגרת מן העתיד</div>
@@ -1406,11 +1402,9 @@
   const camView=$('camView'), camCv=$('camCanvas'), cctx=camCv.getContext('2d');
   const vid=$('camVideo');
   const trail=document.createElement('canvas'), tctx=trail.getContext('2d');   // ממוצע העולם (עתיד)
-  const expo=document.createElement('canvas'), ectx=expo.getContext('2d');     // חשיפת 5 שניות
   const grab=document.createElement('canvas'), gctx=grab.getContext('2d');     // לכידה לחוצץ העבר
   let camOpen=false, stream=null, facing='environment', firstFrame=true, camOpenMyMs=0;
-  let recorder=null, chunks=[], recStart=0;
-  let expoActive=false, expoStart=0, expoTimer=null, pressT=0;
+  let pressT=0;
   let camZoom=1;
   const CAM_DPR=Math.min(devicePixelRatio||1,3);
 
@@ -1421,8 +1415,8 @@
 
   function camResize(){
     camCv.width=innerWidth*CAM_DPR; camCv.height=innerHeight*CAM_DPR;
-    trail.width=expo.width=camCv.width;
-    trail.height=expo.height=camCv.height;
+    trail.width=camCv.width;
+    trail.height=camCv.height;
     grab.width=Math.round(camCv.width/2);
     grab.height=Math.round(camCv.height/2);
   }
@@ -1486,9 +1480,7 @@
     }
   }
   function closeCam(){
-    if(recorder && recorder.state!=='inactive') recorder.stop();
     camOpen=false; camView.classList.remove('open');
-    expoActive=false;
     stopBuffer();
     if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
     returnFromCameraFlowIfNeeded();
@@ -1659,29 +1651,6 @@
       cap.textContent='אתה בהווה — הזמן שלך והעולם חופפים';
     }
     firstFrame=false;
-
-    /* חשיפת 5 שניות: העדשה נערמת לתמונה אחת */
-    if(expoActive){
-      ectx.globalAlpha=0.05;
-      ectx.drawImage(camCv,0,0);
-      ectx.globalAlpha=1;
-      const el=(now-expoStart)/1000, remain=Math.max(0,5-el);
-      const cx=w/2, cy=h/2, r=Math.min(w,h)*0.16;
-      cctx.save();
-      cctx.strokeStyle='rgba(255,255,255,0.9)'; cctx.lineWidth=w*0.008; cctx.lineCap='round';
-      cctx.beginPath(); cctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+(el/5)*2*Math.PI); cctx.stroke();
-      cctx.fillStyle='#fff'; cctx.font=`300 ${Math.round(r*0.8)}px "IBM Plex Mono",monospace`;
-      cctx.textAlign='center'; cctx.textBaseline='middle';
-      cctx.fillText(Math.ceil(remain), cx, cy);
-      cctx.restore();
-      if(el>=5){
-        expoActive=false;
-        stampOn(ectx);
-        const gsExp=(Date.now()-myMs)/1000;
-        if((mode==='fast'||mode==='ultra') && gsExp<-1.5) stampArtifactSeal(ectx,expo.width,expo.height,gsExp);
-        expo.toBlob(b=>b&&showShot(b,false,myMs),'image/jpeg',0.97);
-      }
-    }
     stamp();
   }
 
@@ -1813,23 +1782,12 @@
   $('pcClose').onclick=()=>{ $('postcardSendModal').classList.remove('open'); returnFromCameraFlowIfNeeded(); };
 
 
-  /* צמצם: הקשה = צילום · לחיצה ארוכה = חשיפת 5 שניות */
-  function startExpo(){
-    if(expoActive) return;
-    ectx.clearRect(0,0,expo.width,expo.height);
-    ectx.globalAlpha=1; ectx.drawImage(camCv,0,0);
-    expoActive=true; expoStart=performance.now();
-  }
+  /* עדשה: הקשה = צילום, פשוט וללא סיבוכים */
   const snapEl=$('snap');
-  snapEl.addEventListener('pointerdown',e=>{
-    e.preventDefault();
-    pressT=Date.now();
-    expoTimer=setTimeout(startExpo,420);
-  });
+  snapEl.addEventListener('pointerdown',e=>{ e.preventDefault(); pressT=Date.now(); });
   snapEl.addEventListener('pointerup',e=>{
     e.preventDefault();
-    clearTimeout(expoTimer);
-    if(!expoActive && Date.now()-pressT<420){
+    if(Date.now()-pressT<600){
       // המתנה קצרה לפני התפיסה בפועל — נותנת ליד להתייצב אחרי הנגיעה, כדי שהתמונה לא תיצא מטושטשת
       setTimeout(()=>{
         const gs0=(Date.now()-myMs)/1000;
@@ -1851,31 +1809,6 @@
       },250);
     }
   });
-  snapEl.addEventListener('pointercancel',()=>clearTimeout(expoTimer));
-
-  function pickMime(){
-    for(const mt of ['video/mp4','video/webm;codecs=vp9','video/webm']){
-      if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mt)) return {mimeType:mt};
-    }
-    return {};
-  }
-  $('rec').onclick=()=>{
-    const btn=$('rec');
-    if(recorder && recorder.state==='recording'){recorder.stop();return;}
-    ensureAudio();
-    if(AC.state==='suspended') AC.resume();
-    const cs=camCv.captureStream(30);
-    const mixed=new MediaStream([...cs.getVideoTracks(), ...recDest.stream.getAudioTracks()]);
-    try{recorder=new MediaRecorder(mixed,pickMime());}catch(e){alert('הקלטת וידאו לא נתמכת בדפדפן זה');return;}
-    chunks=[];recStart=Date.now();
-    recorder.ondataavailable=e=>e.data.size&&chunks.push(e.data);
-    recorder.onstop=()=>{
-      btn.classList.remove('rec');$('recTime').style.display='none';
-      showShot(new Blob(chunks,{type:recorder.mimeType||'video/mp4'}),true);
-    };
-    recorder.start(250);
-    btn.classList.add('rec');$('recTime').style.display='block';
-  };
 
   /* ----- לולאה ראשית ----- */
   function frame(now){
@@ -1930,10 +1863,6 @@
       fc.classList.toggle('fast',mode==='fast');
       fc.classList.toggle('ultra',mode==='ultra');
       drawCam(now,dt);
-      if(recorder&&recorder.state==='recording'){
-        const s=Math.floor((Date.now()-recStart)/1000);
-        $('recTime').textContent='● '+Math.floor(s/60)+':'+pad(s%60);
-      }
     }else{
       drawStream(dt);
     }
@@ -2141,6 +2070,7 @@
   $('topicPickerClose').onclick=()=>{ $('topicPicker').classList.remove('open'); pendingPerkAction=null; showPredictionScreen(); };
   $('predToLetter').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); openTopicPicker('letter'); };
   $('predToCam').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); openTopicPicker('selfie'); };
+  $('predToPlainCam').onclick=()=>{ selectedPerkTopicId=null; camOpenedFromPrediction=true; stopPredCam(); $('predictionScreen').classList.remove('open'); openCam(); };
   $('predFlyElsewhere').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); startTelescope(true); };
   $('predBackToNow').onclick=()=>{
     stopPredCam();
