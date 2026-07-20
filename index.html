@@ -1410,7 +1410,7 @@
   let recorder=null, chunks=[], recStart=0;
   let expoActive=false, expoStart=0, expoTimer=null, pressT=0;
   let camZoom=1;
-  const CAM_DPR=Math.min(devicePixelRatio||1,1.5);
+  const CAM_DPR=Math.min(devicePixelRatio||1,3);
 
   /* חוצץ העבר: עד 45 שניות אחורה */
   const BUF_FPS=5, BUF_MAX=45000;
@@ -1696,7 +1696,7 @@
         stampOn(ectx);
         const gsExp=(Date.now()-myMs)/1000;
         if((mode==='fast'||mode==='ultra') && gsExp<-1.5) stampArtifactSeal(ectx,expo.width,expo.height,gsExp);
-        expo.toBlob(b=>b&&showShot(b,false,myMs),'image/jpeg',0.92);
+        expo.toBlob(b=>b&&showShot(b,false,myMs),'image/jpeg',0.97);
       }
     }
     stamp();
@@ -1834,7 +1834,7 @@
             driftBoostSec=Math.min(200,driftBoostSec+70); // שליחת תמונה מהעתיד היא מעשה משמעותי — היא מקדמת את תחושת ההיסט ממש עכשיו, לא רק חיכוי פסיבי
             transmissionFX();
           }
-        },'image/jpeg',0.92);
+        },'image/jpeg',0.97);
       },250);
     }
   });
