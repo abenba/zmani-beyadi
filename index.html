@@ -1,7 +1,3 @@
-
-
-Zmani beyadi · HTML
-Syntax highlighting has been disabled due to code size.
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -285,7 +281,6 @@ Syntax highlighting has been disabled due to code size.
   .letterLaunch.pending{color:#5A7396;border-color:#C7D2E0;box-shadow:none}
   .llRow{display:flex;align-items:center;justify-content:center;gap:9px}
   .llOpt{background:none;border:none;font-family:'Heebo';font-size:13px;font-weight:700;color:inherit;padding:0;cursor:pointer}
-  .llSlash{color:#B7C3D6;font-weight:400}
   .letterLaunch.pending .llRow{display:none}
   .letterLaunch:not(.pending) #llLabel{display:none}
   .llBar{display:none;height:3px;border-radius:2px;background:#E4EBF5;overflow:hidden;margin-top:6px}
@@ -334,10 +329,6 @@ Syntax highlighting has been disabled due to code size.
     flex:none;width:52px;height:70px;border-radius:8px;object-fit:cover;
     border:2px solid transparent;opacity:.55;scroll-snap-align:center}
   .lmThumb.sel{border-color:#3E7BC4;opacity:1;box-shadow:0 2px 8px rgba(62,123,196,.35)}
-  .lmVoiceChip{
-    flex:none;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#5A6572;
-    background:#EEF1F4;border:2px solid transparent;border-radius:10px;padding:9px 13px;direction:ltr}
-  .lmVoiceChip.sel{border-color:#3E7BC4;color:#1E4272;background:#E4EBF5}
   .lmActs{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
   .lmActs button{
     font-family:'Heebo';font-size:13.5px;font-weight:700;padding:10px 20px;border-radius:99px;border:none}
@@ -444,38 +435,6 @@ Syntax highlighting has been disabled due to code size.
     margin-top:6px;font-family:'Heebo';font-size:14px;font-weight:700;color:#EDE6D6;
     background:#ffffff16;border:1px solid #ffffff33;border-radius:99px;padding:11px 30px;width:100%}
 
-  /* ---------- הודעה קולית מן העתיד ---------- */
-  #voiceModal{
-    position:fixed;inset:0;z-index:60;display:none;place-items:center;
-    background:rgba(10,14,20,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:20px}
-  #voiceModal.open{display:grid}
-  .vmBox{
-    width:100%;max-width:360px;background:#fff;border-radius:20px;padding:26px 22px;
-    display:flex;flex-direction:column;align-items:center;gap:14px;max-height:88vh;overflow:auto;text-align:center}
-  .vmBox h3{font-size:17px;font-weight:800;color:#1B2430}
-  .vmBox p{font-size:12.5px;color:#5A6572;line-height:1.6}
-  .vmRecBtn{
-    width:84px;height:84px;border-radius:50%;border:none;font-size:32px;
-    background:linear-gradient(160deg,#5A9BE0,#1E4272);color:#fff;box-shadow:0 6px 20px rgba(30,66,114,.35)}
-  .vmRecBtn.recording{background:linear-gradient(160deg,#E0685A,#8B1E2B);animation:vmPulse 1.1s ease-in-out infinite}
-  @keyframes vmPulse{0%,100%{box-shadow:0 0 0 0 rgba(224,104,90,.5)}50%{box-shadow:0 0 0 16px rgba(224,104,90,0)}}
-  .vmTimer{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:#1B2430;direction:ltr}
-  .vmHint{font-size:12px;color:#8B95A0}
-  .vmPreviewWrap{display:none;flex-direction:column;align-items:center;gap:10px;width:100%}
-  .vmPreviewWrap audio{width:100%}
-  .vmPreviewActs{display:flex;gap:8px;width:100%}
-  .vmPreviewActs button{
-    flex:1;font-family:'Heebo';font-size:13px;font-weight:700;padding:11px;border-radius:99px;border:none}
-  #vmReRecord{background:#EEF1F4;color:#5A6572}
-  #vmSend{background:linear-gradient(160deg,#5A9BE0,#1E4272);color:#fff}
-  #vmCancel{font-family:'Heebo';font-size:12.5px;color:#8B95A0;background:none;border:none;margin-top:2px}
-
-  #voiceSendModal{
-    position:fixed;inset:0;z-index:65;display:none;place-items:center;
-    background:rgba(8,11,16,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:20px}
-  #voiceSendModal.open{display:grid}
-  .vsBox{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;gap:12px}
-  .vsBox audio{width:100%}
   .predLaunch{
     margin-top:2px;font-family:'Heebo';font-size:12.5px;font-weight:800;color:#4A2FA0;
     background:#F1ECFB;border:1.5px solid #C9B4F0;border-radius:99px;padding:7px 14px;
@@ -769,11 +728,9 @@ Syntax highlighting has been disabled due to code size.
   <div class="state" id="stateLine">הזמן שלך זורם עם העולם</div>
   <div class="letterLaunch" id="letterLaunch" style="display:none">
     <div class="llRow" id="llRow">
-      <button class="llOpt" id="llLetterBtn">✉️ איגרת</button>
-      <span class="llSlash">/</span>
-      <button class="llOpt" id="llVoiceBtn">🎙️ הודעה קולית</button>
+      <button class="llOpt" id="llLetterBtn">✍️ כתוב איגרת</button>
     </div>
-    <span id="llLabel">עוד רגע תוכל לשלוח: ✉️ / 🎙️</span>
+    <span id="llLabel">עוד רגע תוכל לכתוב איגרת ✍️</span>
     <i class="llBar" id="llBar"><b id="llBarFill"></b></i>
   </div>
   <button class="predLaunch" id="predLaunch" style="display:none">🌍 השנה <span id="predYearBtn"></span>. מה קורה כאן?</button>
@@ -978,13 +935,6 @@ Syntax highlighting has been disabled due to code size.
         <div class="lmGallery" id="lmGallery"></div>
       </div>
     </div>
-    <div class="lmAttach" id="lmVoiceAttach">
-      <div class="lmAttachEmpty" id="lmVoiceEmpty">🎙️ עוד לא הקלטת הודעה קולית במסע הזה — הקלט אחת וחזור לכאן כדי לצרף</div>
-      <div class="lmAttachGot" id="lmVoiceGot" style="display:none">
-        <div class="lmGalleryHead"><b>יש לך הודעות קוליות</b><label class="lmAttachToggle"><input type="checkbox" id="lmVoiceChk" checked> צרף</label></div>
-        <div class="lmGallery" id="lmVoiceGallery"></div>
-      </div>
-    </div>
     <div class="lmActs">
       <button class="cancel" id="lmCancel">ביטול</button>
       <button class="create" id="lmCreate">צור איגרת</button>
@@ -1004,39 +954,6 @@ Syntax highlighting has been disabled due to code size.
     <div class="lsHint">בחירה בכל ערוץ פותחת את תפריט השיתוף של הטלפון — האיגרת מוכנה שם לצירוף</div>
     <a class="lsSave" id="lsSave" download>⬇️ שמירה בגלריה בלבד</a>
     <button class="lsClose" id="lsClose">✓ סיימתי — חזרה למכונה</button>
-  </div>
-</div>
-
-<div id="voiceModal">
-  <div class="vmBox">
-    <h3>🎙️ הודעה קולית מן העתיד</h3>
-    <p>הקול שלך יעבור עיבוד קל — כאילו הגיע ממרחק, לא הקלטה נקייה. גע כדי להקליט, גע שוב כדי לעצור.</p>
-    <button class="vmRecBtn" id="vmRecBtn">🎙️</button>
-    <div class="vmTimer" id="vmTimer">00:00</div>
-    <div class="vmHint" id="vmHint">גע כדי להתחיל להקליט</div>
-    <div class="vmPreviewWrap" id="vmPreviewWrap">
-      <audio id="vmAudio" controls></audio>
-      <div class="vmPreviewActs">
-        <button id="vmReRecord">🔁 הקלטה מחדש</button>
-        <button id="vmSend">המשך לשליחה</button>
-      </div>
-    </div>
-    <button id="vmCancel">ביטול</button>
-  </div>
-</div>
-
-<div id="voiceSendModal">
-  <div class="vsBox">
-    <audio id="vsAudio" controls></audio>
-    <button class="lsMain" id="vsShare">📤 לשגר את ההודעה</button>
-    <div class="lsChannels">
-      <button class="lsCh lsWa" id="vsWa"><span>💬</span>וואטסאפ</button>
-      <button class="lsCh lsGm" id="vsGm"><span>✉️</span>ג'ימייל</button>
-      <button class="lsCh lsSm" id="vsSm"><span>💌</span>הודעה</button>
-    </div>
-    <div class="lsHint">בחירה בכל ערוץ פותחת את תפריט השיתוף — משפט פתיחה ("יש לך הודעה מהעתיד") יצורף אוטומטית</div>
-    <a class="lsSave" id="vsSave" download>⬇️ שמירה בלבד</a>
-    <button class="lsClose" id="vsClose">✓ סיימתי — חזרה למכונה</button>
   </div>
 </div>
 
@@ -1798,6 +1715,10 @@ Syntax highlighting has been disabled due to code size.
     lastBlob=blob;
     lastFutureMs = futureMs!==undefined ? futureMs : Date.now();
     lastName=(isVideo?'zmani-video-':'zmani-photo-')+Date.now()+(isVideo?'.mp4':'.jpg');
+    if(!isVideo && selectedPerkTopicId){
+      generatePostcard();
+      return;
+    }
     const url=URL.createObjectURL(blob);
     shotImg.style.display=isVideo?'none':'block';
     shotVid.style.display=isVideo?'block':'none';
@@ -2560,7 +2481,6 @@ Syntax highlighting has been disabled due to code size.
   $('llLetterBtn').onclick=()=>{
     $('lmText').value=''; $('lmTo').value=''; $('lmFrom').value='';
     refreshAttachUI();
-    refreshVoiceAttachUI();
     generatedTopicImageData=null;
     $('lmAiImgPreview').style.display='none';
     $('lmAiImgStatus').textContent='';
@@ -2672,10 +2592,6 @@ Syntax highlighting has been disabled due to code size.
       const p=futureSnaps[selectedSnapIdx];
       optional.push({file:new File([p.blob],'tmuna-me-heatid-'+p.ms+'.jpg',{type:p.blob.type||'image/jpeg'}), label:' צורפה גם תמונה.'});
     }
-    if(futureVoices.length>0 && selectedVoiceIdx>=0 && $('lmVoiceChk').checked){
-      const v=futureVoices[selectedVoiceIdx];
-      optional.push({file:new File([v.blob],'hodaa-kolit-'+v.ms+'.wav',{type:v.blob.type||'audio/wav'}), label:' צורפה גם הודעה קולית.'});
-    }
     // מנסים לשגר עם כל הצירופים; אם הדפדפן לא תומך בכל הכמות, מורידים אחד בכל פעם עד שמוצאים צירוף שנתמך
     for(let n=optional.length; n>=0; n--){
       const chosen=optional.slice(0,n);
@@ -2697,184 +2613,6 @@ Syntax highlighting has been disabled due to code size.
   $('lsGm').onclick=dispatchLetter;
   $('lsSm').onclick=dispatchLetter;
   $('lsClose').onclick=()=>{ $('letterSendModal').classList.remove('open'); returnFromCameraFlowIfNeeded(); };
-
-  /* ---------- הודעה קולית מן העתיד ---------- */
-  function pickAudioMime(){
-    for(const mt of ['audio/webm;codecs=opus','audio/webm','audio/mp4']){
-      if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mt)) return {mimeType:mt};
-    }
-    return {};
-  }
-  function audioBufferToWav(buffer){
-    const numCh=buffer.numberOfChannels, sr=buffer.sampleRate, len=buffer.length;
-    const blockAlign=numCh*2, dataSize=len*blockAlign;
-    const ab=new ArrayBuffer(44+dataSize), view=new DataView(ab);
-    const writeStr=(o,s)=>{ for(let i=0;i<s.length;i++) view.setUint8(o+i,s.charCodeAt(i)); };
-    writeStr(0,'RIFF'); view.setUint32(4,36+dataSize,true); writeStr(8,'WAVE');
-    writeStr(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true);
-    view.setUint16(22,numCh,true); view.setUint32(24,sr,true);
-    view.setUint32(28,sr*blockAlign,true); view.setUint16(32,blockAlign,true); view.setUint16(34,16,true);
-    writeStr(36,'data'); view.setUint32(40,dataSize,true);
-    const channels=[]; for(let c=0;c<numCh;c++) channels.push(buffer.getChannelData(c));
-    let offset=44;
-    for(let i=0;i<len;i++){
-      for(let c=0;c<numCh;c++){
-        const s=Math.max(-1,Math.min(1,channels[c][i]));
-        view.setInt16(offset, s<0? s*0x8000 : s*0x7FFF, true);
-        offset+=2;
-      }
-    }
-    return new Blob([ab],{type:'audio/wav'});
-  }
-  // ממירים תמיד ל-WAV — WebM/Opus (מה שדפדפני אנדרואיד/כרום מקליטים) לא נתמך באייפון בכלל, וזו הסיבה שהקובץ "לא נפתח"
-  async function convertToWav(blob){
-    const arrBuf=await blob.arrayBuffer();
-    const decodeCtx = AC || new (window.AudioContext||window.webkitAudioContext)();
-    const audioBuf = await decodeCtx.decodeAudioData(arrBuf);
-    return {blob:audioBufferToWav(audioBuf), duration:audioBuf.duration};
-  }
-  let futureVoices=[], selectedVoiceIdx=-1; // {blob,url,ms,duration}[] — כל הודעה קולית שהוקלטה במסע הנוכחי, זמינה לצירוף לאיגרת
-  function refreshVoiceAttachUI(){
-    const has=futureVoices.length>0;
-    $('lmVoiceEmpty').style.display = has? 'none':'block';
-    $('lmVoiceGot').style.display = has? 'flex':'none';
-    if(!has) return;
-    if(selectedVoiceIdx<0 || selectedVoiceIdx>=futureVoices.length) selectedVoiceIdx=futureVoices.length-1;
-    const wrap=$('lmVoiceGallery'); wrap.innerHTML='';
-    futureVoices.forEach((v,i)=>{
-      const b=document.createElement('button');
-      b.type='button';
-      b.className='lmVoiceChip'+(i===selectedVoiceIdx?' sel':'');
-      const s=Math.round(v.duration||0);
-      b.textContent='🎙️ '+Math.floor(s/60)+':'+pad(s%60);
-      b.onclick=()=>{ selectedVoiceIdx=i; refreshVoiceAttachUI(); };
-      wrap.appendChild(b);
-    });
-  }
-  function buildImpulse(dur,decay){
-    const rate=AC.sampleRate, len=Math.max(1,Math.floor(rate*dur)), imp=AC.createBuffer(2,len,rate);
-    for(let c=0;c<2;c++){
-      const ch=imp.getChannelData(c);
-      for(let i=0;i<len;i++) ch[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay);
-    }
-    return imp;
-  }
-  function buildNoiseSource(){
-    const rate=AC.sampleRate, len=rate*2, buf=AC.createBuffer(1,len,rate);
-    const ch=buf.getChannelData(0);
-    for(let i=0;i<len;i++) ch[i]=(Math.random()*2-1)*0.6;
-    const src=AC.createBufferSource(); src.buffer=buf; src.loop=true;
-    return src;
-  }
-  let voiceStream=null, voiceRecorder=null, voiceChunks=[], voiceBlob=null, voiceRecording=false, voiceRecStart=0, voiceTimerId=null, voiceNoiseSrc=null;
-  function updateVoiceUI(){
-    $('vmRecBtn').classList.toggle('recording',voiceRecording);
-    $('vmRecBtn').textContent = voiceRecording ? '⏹' : '🎙️';
-    $('vmHint').textContent = voiceRecording ? 'מקליט… גע כדי לעצור' : (voiceBlob?'':'גע כדי להתחיל להקליט');
-  }
-  function updateVoiceTimer(){
-    const s=Math.floor((performance.now()-voiceRecStart)/1000);
-    $('vmTimer').textContent=pad(Math.floor(s/60))+':'+pad(s%60);
-  }
-  async function startVoiceRec(){
-    let stream;
-    try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
-    catch(e){ alert('אין גישה למיקרופון — בדוק הרשאות.'); return; }
-    voiceStream=stream;
-    ensureAudio(); if(AC.state==='suspended') AC.resume();
-    const src=AC.createMediaStreamSource(stream);
-    const hp=AC.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=280;
-    const band=AC.createBiquadFilter(); band.type='bandpass'; band.frequency.value=1500; band.Q.value=0.7;
-    const conv=AC.createConvolver(); conv.buffer=buildImpulse(1.1,2.2);
-    const dryGain=AC.createGain(); dryGain.gain.value=0.72;
-    const wetGain=AC.createGain(); wetGain.gain.value=0.34;
-    const dest=AC.createMediaStreamDestination();
-    src.connect(hp); hp.connect(band);
-    band.connect(dryGain); dryGain.connect(dest);
-    band.connect(conv); conv.connect(wetGain); wetGain.connect(dest);
-    const noise=buildNoiseSource(), noiseGain=AC.createGain(); noiseGain.gain.value=0.012;
-    noise.connect(noiseGain); noiseGain.connect(dest); noise.start();
-    voiceNoiseSrc=noise;
-    voiceChunks=[];
-    try{ voiceRecorder=new MediaRecorder(dest.stream,pickAudioMime()); }
-    catch(e){ alert('הקלטה לא נתמכת בדפדפן זה.'); return; }
-    voiceRecorder.ondataavailable=e=>{ if(e.data.size) voiceChunks.push(e.data); };
-    voiceRecorder.onstop=async ()=>{
-      const rawBlob=new Blob(voiceChunks,{type:voiceRecorder.mimeType||'audio/webm'});
-      if(voiceNoiseSrc){ try{voiceNoiseSrc.stop();}catch(e){} voiceNoiseSrc=null; }
-      if(voiceStream){ voiceStream.getTracks().forEach(t=>t.stop()); voiceStream=null; }
-      $('vmHint').textContent='מעבד…';
-      try{
-        const res=await convertToWav(rawBlob);
-        voiceBlob=res.blob;
-        futureVoices.push({blob:voiceBlob, url:URL.createObjectURL(voiceBlob), ms:Date.now(), duration:res.duration});
-        selectedVoiceIdx=futureVoices.length-1;
-      }catch(e){
-        voiceBlob=rawBlob;
-        futureVoices.push({blob:voiceBlob, url:URL.createObjectURL(voiceBlob), ms:Date.now(), duration:0});
-        selectedVoiceIdx=futureVoices.length-1;
-      }
-      const url=URL.createObjectURL(voiceBlob);
-      $('vmAudio').src=url;
-      $('vmPreviewWrap').style.display='flex';
-      updateVoiceUI();
-    };
-    voiceRecorder.start();
-    voiceRecording=true; voiceRecStart=performance.now();
-    $('vmPreviewWrap').style.display='none';
-    updateVoiceUI();
-    voiceTimerId=setInterval(updateVoiceTimer,200);
-  }
-  function stopVoiceRec(){
-    if(voiceRecorder && voiceRecorder.state!=='inactive') voiceRecorder.stop();
-    voiceRecording=false;
-    clearInterval(voiceTimerId);
-    updateVoiceUI();
-  }
-  $('llVoiceBtn').onclick=()=>{
-    voiceBlob=null; voiceChunks=[];
-    $('vmPreviewWrap').style.display='none';
-    $('vmTimer').textContent='00:00';
-    updateVoiceUI();
-    $('voiceModal').classList.add('open');
-  };
-  $('vmRecBtn').onclick=()=>{ voiceRecording ? stopVoiceRec() : startVoiceRec(); };
-  $('vmReRecord').onclick=()=>{ voiceBlob=null; $('vmPreviewWrap').style.display='none'; $('vmTimer').textContent='00:00'; };
-  $('vmCancel').onclick=()=>{ if(voiceRecording) stopVoiceRec(); $('voiceModal').classList.remove('open'); returnFromCameraFlowIfNeeded(); };
-  $('vmSend').onclick=()=>{
-    if(!voiceBlob) return;
-    $('voiceModal').classList.remove('open');
-    showVoiceSend();
-  };
-
-  let voiceSendBlob=null, voiceSendFileName='';
-  function showVoiceSend(){
-    voiceSendBlob=voiceBlob;
-    voiceSendFileName='hodaa-kolit-me-heatid-'+Date.now()+(voiceSendBlob.type.includes('wav')?'.wav':voiceSendBlob.type.includes('mp4')?'.m4a':'.webm');
-    const url=URL.createObjectURL(voiceSendBlob);
-    $('vsAudio').src=url;
-    $('vsSave').href=url; $('vsSave').download=voiceSendFileName;
-    $('voiceSendModal').classList.add('open');
-    addJournalEntry('נשלחה הודעה קולית לעולם המקור.');
-  }
-  async function dispatchVoice(){
-    if(!voiceSendBlob) return;
-    const file=new File([voiceSendBlob],voiceSendFileName,{type:voiceSendBlob.type});
-    const preamble='שלום רב, יש לך הודעה מהעתיד. האם תהיה מוכן לקבל? מצורפת הקלטה מ'+fmtLetterDate(myMs)+' · '+fmtLetterTime(myMs)+'.';
-    if(navigator.canShare && navigator.canShare({files:[file]})){
-      try{
-        await navigator.share({files:[file],title:'הודעה קולית מהעתיד',text:preamble});
-        setTimeout(()=>{ $('voiceSendModal').classList.remove('open'); },400);
-      }catch(e){}
-    }else{
-      alert('שיתוף ישיר לא נתמך בדפדפן הזה — אפשר לשמור את ההקלטה ולצרף ידנית.');
-    }
-  }
-  $('vsShare').onclick=dispatchVoice;
-  $('vsWa').onclick=dispatchVoice;
-  $('vsGm').onclick=dispatchVoice;
-  $('vsSm').onclick=dispatchVoice;
-  $('vsClose').onclick=()=>{ $('voiceSendModal').classList.remove('open'); returnFromCameraFlowIfNeeded(); };
 
   /* ---------- קפיצת זמן: קפיצה ישירה למועד עתידי, לא הדרגתית ---------- */
   const JUMP_MAX_YEARS=100, JUMP_COST_SEC=300; // 5 דקות מהמכסה היומית
@@ -3168,5 +2906,3 @@ Syntax highlighting has been disabled due to code size.
 </script>
 </body>
 </html>
-
-
