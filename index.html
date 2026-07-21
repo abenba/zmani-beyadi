@@ -462,14 +462,7 @@
 
   /* ---------- ערך בודד באנציקלופדיה ---------- */
   /* ---------- על מה מהעתיד? בחירת נושא לפני איגרת/סלפי ---------- */
-  #topicPicker{position:fixed;inset:0;z-index:76;display:none;overflow:hidden;background:#0B0E14}
-  #topicPicker.open{display:block}
-  .topicPickerBg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 20%,#1a2340,#05070f 75%)}
-  .topicPickerContent{
-    position:relative;z-index:2;min-height:100%;overflow-y:auto;
-    display:flex;flex-direction:column;align-items:center;
-    padding:calc(env(safe-area-inset-top) + 40px) 18px calc(env(safe-area-inset-bottom) + 40px);color:#fff}
-  .topicPickerTitle{font-family:'Frank Ruhl Libre',serif;font-size:20px;font-weight:700;margin-bottom:20px}
+  /* מסך בחירת נושא הוסר — התוכן נשאב תמיד מהאירוע שהמשתמש הגיע אליו */
 
   #encyDetail{position:fixed;inset:0;z-index:74;display:none;overflow:hidden;background:#0B0E14}
   #encyDetail.open{display:block}
@@ -779,8 +772,8 @@
     <div class="predCredit">תוכן ספקולטיבי שהוכן על ידי קלוד</div>
     <div class="predCard" id="predCard"></div>
     <div class="predActs">
-      <button id="predToLetter">✍️ כתוב איגרת מן העתיד</button>
-      <button id="predToCam">📷 צור סלפי/תמונה מהעתיד</button>
+      <button id="predToLetter">✍️ כתוב איגרת מן המקום</button>
+      <button id="predToCam">📷 צור סלפי/תמונה מן המקום</button>
     </div>
     <div class="encyIntro" id="encyIntro" style="display:none">רוצה להעמיק? גע/י במקש המתאים</div>
     <div class="encyGrid" id="encyGrid" style="display:none"></div>
@@ -788,15 +781,6 @@
       <button id="predFlyElsewhere">⚡ טוס לשנה אחרת</button>
       <button id="predBackToNow">🕐 חזרה להווה</button>
     </div>
-  </div>
-</div>
-
-<div id="topicPicker">
-  <div class="topicPickerBg"></div>
-  <div class="topicPickerContent">
-    <button class="encyClose" id="topicPickerClose">✕</button>
-    <div class="topicPickerTitle">שלב תכנים ממה שמתרחש כאן</div>
-    <div class="encyGrid" id="topicPickerGrid" style="display:grid"></div>
   </div>
 </div>
 
@@ -903,7 +887,7 @@
     <a id="saveShot" download>שמירה</a>
     <button id="closeShot">סגירה</button>
   </div>
-  <button id="makePostcard" style="display:none">📷 צור סלפי/תמונה מהעתיד</button>
+  <button id="makePostcard" style="display:none">📷 צור סלפי/תמונה מן המקום</button>
   <div class="hint">התוצר נחתם בזמן שלך ובפער מהעולם</div>
 </div>
 
@@ -1486,7 +1470,6 @@
   let camOpenedFromPrediction=false;
   function returnFromCameraFlowIfNeeded(){
     camOpenedFromPrediction=false;
-    selectedPerkTopicId=null;
     startTelescope(true);
   }
   $('openCam').onclick=openCam;
@@ -1660,7 +1643,7 @@
     lastBlob=blob;
     lastFutureMs = futureMs!==undefined ? futureMs : Date.now();
     lastName=(isVideo?'zmani-video-':'zmani-photo-')+Date.now()+(isVideo?'.mp4':'.jpg');
-    if(!isVideo && selectedPerkTopicId){
+    if(!isVideo && camOpenedFromPrediction){
       generatePostcard();
       return;
     }
@@ -1691,10 +1674,10 @@
       reader.readAsDataURL(blob);
     });
   }
-  async function tryAiSelfie(t,targetYear,blob){
+  async function tryAiSelfie(ev,targetYear,blob){
     try{
       const base64=await blobToBase64(blob);
-      const prompt='ערוך את התמונה המצורפת מחדש כדי שתשקף את הנושא "'+t.title+'" בעולם של שנת '+targetYear+'. אם יש אדם/אנשים בתמונה המקורית — שמור על הפנים שלהם ברורים, מוכרים ובמרכז הפריים, וצייר את הסביבה מסביבם מחדש בהתאם לנושא. אם אין אדם בתמונה (למשל תמונת נוף, עצם או מקום) — אל תוסיף דמות מלאכותית שלא הייתה שם; התאם רק את הסצנה, האווירה והפרטים לנושא, על בסיס התמונה המקורית. בשני המקרים: צייר בסגנון מאויר (לא פוטוריאליסטי), לא איור שטוח או גנרי. חשוב: התוצאה צריכה להיות מרשימה, דרמטית ומגניבה ויזואלית — קומפוזיציה נועזת, תאורה אטמוספרית, עומק ופרטים עשירים ברקע. סגנון אמנותי-עתידני איכותי (ברמת קונספט-ארט של קולנוע מדע בדיוני), גוונים סביב הצבע '+t.accent+', קומפוזיציה פורטרטית (לאורך), ללא טקסט בתמונה.';
+      const prompt='ערוך את התמונה המצורפת מחדש כדי שתשקף את האירוע הספציפי הבא, שהתרחש בשנת '+targetYear+': "'+ev.title+'" — '+ev.teaser+' אם יש אדם/אנשים בתמונה המקורית — שמור על הפנים שלהם ברורים, מוכרים ובמרכז הפריים, וצייר את הסביבה מסביבם מחדש כך שתשקף במפורש את האירוע הזה (לא רק אווירה עתידנית כללית). אם אין אדם בתמונה (למשל תמונת נוף, עצם או מקום) — אל תוסיף דמות מלאכותית שלא הייתה שם; התאם רק את הסצנה, האווירה והפרטים לאירוע, על בסיס התמונה המקורית. בשני המקרים: צייר בסגנון מאויר (לא פוטוריאליסטי), לא איור שטוח או גנרי. חשוב: התוצאה צריכה להיות מרשימה, דרמטית ומגניבה ויזואלית — קומפוזיציה נועזת, תאורה אטמוספרית, עומק ופרטים עשירים ברקע שמרמזים בבירור על האירוע. סגנון אמנותי-עתידני איכותי (ברמת קונספט-ארט של קולנוע מדע בדיוני), גוונים סביב הצבע '+ev.accent+', קומפוזיציה פורטרטית (לאורך), ללא טקסט בתמונה.';
       const res=await fetch('/.netlify/functions/generate-image',{
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({prompt, image:base64, mimeType: blob.type||'image/jpeg'})
@@ -1711,26 +1694,23 @@
     const yearsAhead=targetYear-new Date().getFullYear();
     const key=keyForTarget(targetYear,yearsAhead);
     let photoUrl=URL.createObjectURL(lastBlob);
-    if(selectedPerkTopicId){
-      const t=ENCY_TOPICS.find(x=>x.id===selectedPerkTopicId);
-      const bucket=bucketForYears(Math.min(100,Math.max(1,yearsAhead)));
-      const entry=encyEntry(selectedPerkTopicId,bucket);
+    const ev=currentEvent();
+    if(ev){
       shot.classList.remove('open');
-      $('aiGenText').textContent = facing==='user' ? 'מציירים אותך בעתיד…' : 'מציירים תמונה בעתיד…';
+      $('aiGenText').textContent = facing==='user' ? 'מציירים אותך במקום…' : 'מציירים את הרגע…';
       $('aiGenOverlay').classList.add('open');
-      const aiUrl=await tryAiSelfie(t,targetYear,lastBlob);
+      const aiUrl=await tryAiSelfie(ev,targetYear,lastBlob);
       $('aiGenOverlay').classList.remove('open');
-      $('pcBg').style.background=`linear-gradient(165deg, ${t.accent}, #0B0E14 78%)`;
+      $('pcBg').style.background=`linear-gradient(165deg, ${ev.accent}, #0B0E14 78%)`;
       $('pcBg').innerHTML='';
       if(aiUrl){
         photoUrl=aiUrl;
         $('pcTopicIcon').style.display='none';
       }else{
-        $('pcTopicIcon').innerHTML=buildEncyIllustration(t.motif,t.accent);
+        $('pcTopicIcon').innerHTML=buildEncyIllustration(ev.motif,ev.accent);
         $('pcTopicIcon').style.display='block';
       }
-      $('pcCaption').textContent=entry.teaser+' '+entry.body.split('\n\n')[0];
-      selectedPerkTopicId=null;
+      $('pcCaption').textContent=ev.title+' — '+ev.teaser;
     }else{
       $('pcTopicIcon').style.display='none';
       $('pcBg').style.background=PRED_PALETTES[key].bg;
@@ -2073,9 +2053,8 @@
   }
   $('predLaunch').onclick=showPredictionScreen;
   $('predClose').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); startTelescope(true); };
-  $('topicPickerClose').onclick=()=>{ $('topicPicker').classList.remove('open'); pendingPerkAction=null; showPredictionScreen(); };
-  $('predToLetter').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); openTopicPicker('letter'); };
-  $('predToCam').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); openTopicPicker('selfie'); };
+  $('predToLetter').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); $('llLetterBtn').click(); };
+  $('predToCam').onclick=()=>{ camOpenedFromPrediction=true; stopPredCam(); $('predictionScreen').classList.remove('open'); openCam(); };
   $('predFlyElsewhere').onclick=()=>{ stopPredCam(); $('predictionScreen').classList.remove('open'); startTelescope(true); };
   $('predBackToNow').onclick=()=>{
     stopPredCam();
@@ -2295,46 +2274,17 @@
   function encyEntry(topicId,bucket){
     return (ENCYCLOPEDIA[topicId] && ENCYCLOPEDIA[topicId][bucket]) || STUB;
   }
-  let pendingPerkAction=null, selectedPerkTopicId=null;
   function currentYearBucket(){
     const targetYear=new Date(myMs).getFullYear();
     const yearsAhead=Math.max(1,targetYear-new Date().getFullYear());
     return {targetYear, bucket:bucketForYears(Math.min(100,yearsAhead))};
   }
-  function openTopicPicker(action){
-    pendingPerkAction=action;
-    const {bucket}=currentYearBucket();
-    const shuffled=[...ENCY_TOPICS].sort(()=>Math.random()-0.5).slice(0,7);
-    const grid=$('topicPickerGrid');
-    grid.innerHTML='';
-    shuffled.forEach(t=>{
-      const entry=encyEntry(t.id,bucket);
-      const tile=document.createElement('div');
-      tile.className='encyTile';
-      tile.innerHTML=buildEncyIllustration(t.motif,t.accent)+'<b>'+t.title+'</b><span>'+entry.teaser+'</span>';
-      tile.onclick=()=>chooseTopic(t.id);
-      grid.appendChild(tile);
-    });
-    const surprise=document.createElement('div');
-    surprise.className='encyTile';
-    surprise.innerHTML='<div style="font-size:38px;line-height:1">🎲</div><b>תפתיע אותי</b>';
-    surprise.onclick=()=>chooseTopic(null);
-    grid.appendChild(surprise);
-    $('topicPicker').classList.add('open');
-  }
-  function chooseTopic(topicId){
-    if(!topicId){ topicId=ENCY_TOPICS[Math.floor(Math.random()*ENCY_TOPICS.length)].id; }
-    selectedPerkTopicId=topicId;
-    $('topicPicker').classList.remove('open');
-    if(pendingPerkAction==='letter'){
-      $('llLetterBtn').click();
-    }else if(pendingPerkAction==='selfie'){
-      camOpenedFromPrediction=true;
-      stopPredCam();
-      $('predictionScreen').classList.remove('open');
-      openCam();
-    }
-    pendingPerkAction=null;
+  function currentEvent(){
+    if(!lastLandedEventId) return null;
+    const ev=FUTURE_EVENTS.find(e=>e.id===lastLandedEventId);
+    if(!ev) return null;
+    const vis=ENCY_TOPICS.find(t=>t.id===ev.domain) || {motif:'network',accent:'#8B6FE8'};
+    return {...ev, motif:vis.motif, accent:vis.accent};
   }
   let encyCurrentYear=0, encyCurrentBucket='1-10';
   function renderEncyGrid(targetYear,yearsAhead){
@@ -2461,13 +2411,11 @@
     $('lmAiImgPreview').style.display='none';
     $('lmAiImgStatus').textContent='';
     $('lmGenImg').disabled=false;
-    if(selectedPerkTopicId){
-      const t=ENCY_TOPICS.find(x=>x.id===selectedPerkTopicId);
-      const {bucket}=currentYearBucket();
-      const entry=encyEntry(selectedPerkTopicId,bucket);
-      const bgSentences=entry.body.split('\n\n').slice(0,2).join(' ');
-      $('lmBgPreviewIcon').innerHTML=buildEncyIllustration(t.motif,t.accent).replace('<svg ','<svg width="36" height="36" ');
-      $('lmBgPreviewText').textContent=bgSentences;
+    const ev=currentEvent();
+    if(ev){
+      const bgText=ev.teaser+' '+ev.story.split('\n\n')[0];
+      $('lmBgPreviewIcon').innerHTML=buildEncyIllustration(ev.motif,ev.accent).replace('<svg ','<svg width="36" height="36" ');
+      $('lmBgPreviewText').textContent=bgText;
       $('lmBgPreview').style.display='flex';
       $('lmAiImg').style.display='flex';
     }else{
@@ -2477,14 +2425,13 @@
     $('letterModal').classList.add('open');
   };
   $('lmGenImg').onclick=async ()=>{
-    if(!selectedPerkTopicId) return;
-    const t=ENCY_TOPICS.find(x=>x.id===selectedPerkTopicId);
-    const {targetYear}=currentYearBucket();
+    const ev=currentEvent();
+    if(!ev) return;
     $('lmGenImg').disabled=true;
     $('lmAiImgStatus').textContent='יוצר תמונה… (יכול לקחת כמה שניות)';
     $('lmAiImgPreview').style.display='none';
     try{
-      const prompt='איור דיגיטלי מופשט ואמנותי, לא פוטוריאליסטי וללא טקסט או כתובית בתמונה, המתאר את הנושא "'+t.title+'" בעולם של שנת '+targetYear+'. סגנון עתידני, נקי ומינימליסטי, גוונים סביב הצבע '+t.accent+'.';
+      const prompt='איור דיגיטלי מופשט ואמנותי, לא פוטוריאליסטי וללא טקסט או כתובית בתמונה, המתאר את האירוע הספציפי: "'+ev.title+'" — '+ev.teaser+' (שנת '+ev.year+'). סגנון עתידני, נקי ומינימליסטי, גוונים סביב הצבע '+ev.accent+'.';
       const res=await fetch('/.netlify/functions/generate-image',{
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({prompt})
@@ -2514,15 +2461,12 @@
     const letterSeq = nextArtifactSeq();
     $('lcSealNum').textContent = '#'+String(letterSeq).padStart(6,'0');
     $('lcBody').textContent = text;
-    if(selectedPerkTopicId){
-      const t=ENCY_TOPICS.find(x=>x.id===selectedPerkTopicId);
-      const {bucket}=currentYearBucket();
-      const entry=encyEntry(selectedPerkTopicId,bucket);
-      const bgSentences=entry.body.split('\n\n').slice(0,2).join(' '); // שתי הפסקאות הראשונות — כ-4 משפטים
-      $('lcBgIcon').innerHTML=buildEncyIllustration(t.motif,t.accent).replace('<svg ','<svg width="44" height="44" ');
-      $('lcBgText').textContent=bgSentences;
+    const ev=currentEvent();
+    if(ev){
+      const bgText=ev.title+' — '+ev.teaser+' '+ev.story.split('\n\n')[0];
+      $('lcBgIcon').innerHTML=buildEncyIllustration(ev.motif,ev.accent).replace('<svg ','<svg width="44" height="44" ');
+      $('lcBgText').textContent=bgText;
       $('lcBackground').style.display='flex';
-      selectedPerkTopicId=null;
     }else{
       $('lcBackground').style.display='none';
     }
