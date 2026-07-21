@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>משחקי זמן</title>
+<title>היינו שם</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800&family=IBM+Plex+Mono:wght@300;500;700&family=Caveat:wght@500&family=Rubik:wght@400;500;600&family=Frank+Ruhl+Libre:wght@400;500;700&family=Secular+One&display=swap" rel="stylesheet">
 <style>
@@ -640,8 +640,8 @@
 <body>
 <div id="bootScreen">
   <div class="bootInner" id="bootInner">
-    <div class="bootTitle">⏱ משחקי זמן</div>
-    <div class="bootQuoteEn">sometimes I just wanna<br>spin the hands of time forward</div>
+    <div class="bootTitle">⏱ היינו שם</div>
+    <div class="bootQuoteEn">you'll read about it.<br>i lived it.</div>
     <div class="bootAnonym">anonym</div>
     <div class="bootSub">הקש כדי להתחיל</div>
   </div>
@@ -678,7 +678,7 @@
     if(window.unlockAudio) window.unlockAudio();
     playBootSound();
     inner.innerHTML =
-      '<div class="bootTitle">⏱ משחקי זמן</div>'+
+      '<div class="bootTitle">⏱ היינו שם</div>'+
       '<div class="bootSub" id="bootSub2">מתחבר לעולם…</div>'+
       '<div class="bootDigits" id="bootDigits">--:--</div>';
     var digitsEl=document.getElementById('bootDigits'), subEl=document.getElementById('bootSub2');
@@ -714,7 +714,7 @@
 <canvas id="stream"></canvas>
 
 <header>
-  <div class="brand">משחקי זמן <small>אב־טיפוס</small></div>
+  <div class="brand">היינו שם <small>אב־טיפוס</small></div>
   <div class="hRight">
     <div class="soundWrap">
       <button class="soundBtn on" id="soundBtn" aria-label="קול">🔊</button>
@@ -726,7 +726,7 @@
 </header>
 
 <main>
-  <div class="mainTitle">משחקי זמן</div>
+  <div class="mainTitle">היינו שם</div>
   <div class="worldLine">שעון העולם&nbsp;<span id="wHm">--:--</span><span id="wSs" class="wsec">--</span></div>
   <div class="clockTag">הזמן שלך</div>
   <div class="clock" id="clockEl"><span id="hm">--:--</span><span class="sec" id="ss">--</span></div>
@@ -992,7 +992,7 @@
   <div class="lcTopicImg" id="lcTopicImg" style="display:none"><img id="lcTopicImgEl" alt=""></div>
   <div class="lcFoot">
     <div class="lcFootLine"></div>
-    <div class="lcFootBrand">משחקי זמן</div>
+    <div class="lcFootBrand">היינו שם</div>
     <div class="lcFootTag">כלי אישי למסע בזמן</div>
   </div>
 </div>
@@ -1011,7 +1011,7 @@
     <div class="pcSeal" id="pcSeal"></div>
     <div class="pcFoot">
       <div class="pcFootLine"></div>
-      <div class="pcFootBrand">משחקי זמן</div>
+      <div class="pcFootBrand">היינו שם</div>
     </div>
   </div>
 </div>
@@ -1556,7 +1556,7 @@
     const gapSec=(Date.now()-myMs)/1000;
     dst.fillText(fmtFull(myMs)+'  '+fmtGap(gapSec), f, h-f);
     dst.font=`300 ${Math.round(f*0.72)}px "Heebo",sans-serif`;
-    dst.fillText('משחקי זמן', f, h-f*2.1);
+    dst.fillText('היינו שם', f, h-f*2.1);
     dst.restore();
   }
   const stamp=()=>stampOn(cctx);
@@ -1665,7 +1665,7 @@
     if(!lastBlob) return;
     const file=new File([lastBlob],lastName,{type:lastBlob.type});
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      try{await navigator.share({files:[file],title:'משחקי זמן'});}catch(e){}
+      try{await navigator.share({files:[file],title:'היינו שם'});}catch(e){}
     }else alert('שיתוף קבצים לא נתמך כאן — השתמש בשמירה');
   };
 
