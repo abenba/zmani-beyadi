@@ -640,7 +640,7 @@
 <body>
 <div id="bootScreen">
   <div class="bootInner" id="bootInner">
-    <div class="bootTitle">⏱ היינו שם</div>
+    <div class="bootTitle">🌀 היינו שם</div>
     <div class="bootQuoteEn">you'll read about it.<br>i lived it.</div>
     <div class="bootAnonym">anonym</div>
     <div class="bootSub">הקש כדי להתחיל</div>
@@ -678,7 +678,7 @@
     if(window.unlockAudio) window.unlockAudio();
     playBootSound();
     inner.innerHTML =
-      '<div class="bootTitle">⏱ היינו שם</div>'+
+      '<div class="bootTitle">🌀 היינו שם</div>'+
       '<div class="bootSub" id="bootSub2">מתחבר לעולם…</div>'+
       '<div class="bootDigits" id="bootDigits">--:--</div>';
     var digitsEl=document.getElementById('bootDigits'), subEl=document.getElementById('bootSub2');
@@ -779,8 +779,6 @@
       <button id="predToLetter">✍️ כתוב איגרת מן המקום</button>
       <button id="predToCam">📷 צור סלפי/תמונה מן המקום</button>
     </div>
-    <div class="encyIntro" id="encyIntro" style="display:none">רוצה להעמיק? גע/י במקש המתאים</div>
-    <div class="encyGrid" id="encyGrid" style="display:none"></div>
     <div class="predNav">
       <button id="predFlyElsewhere">⚡ טוס לשנה אחרת</button>
       <button id="predBackToNow">🕐 חזרה להווה</button>
@@ -2057,7 +2055,6 @@
     }
     $('predBg').style.background=PRED_PALETTES[key].bg;
     $('predBg').innerHTML=buildSceneSVG(key,targetYear);
-    renderEncyGrid(targetYear,yearsAhead);
     $('predictionScreen').classList.add('open');
     startPredCam();
   }
