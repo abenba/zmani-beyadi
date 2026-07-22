@@ -594,6 +594,25 @@
   .telescopeManual{
     font-family:'Heebo';font-size:12px;color:#B9C5E0;background:none;border:none;
     border-bottom:1px dotted #7A87A8;padding:2px}
+  .telescopeViewToggle{
+    position:absolute;top:calc(env(safe-area-inset-top) + 22px);left:18px;z-index:32;
+    font-family:'Heebo';font-size:12px;font-weight:700;color:#fff;
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);
+    border-radius:99px;padding:8px 14px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .telescopeListView{
+    display:none;position:absolute;inset:0;z-index:5;overflow-y:auto;
+    padding:calc(env(safe-area-inset-top) + 96px) 16px calc(env(safe-area-inset-bottom) + 90px)}
+  .telescopeListView.open{display:block}
+  .telescopeListRow{
+    display:flex;align-items:center;gap:12px;max-width:400px;margin:0 auto 10px;
+    background:rgba(20,26,38,.65);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+    border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:13px 16px;cursor:pointer;
+    transition:background .15s}
+  .telescopeListRow:active{background:rgba(139,111,232,.22)}
+  .telescopeListDot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px currentColor}
+  .telescopeListText{flex:1;min-width:0;text-align:right}
+  .telescopeListTitle{font-family:'Heebo';font-size:14.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .telescopeListTime{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8FE3D6;margin-top:2px}
   .telescopeTag{
     position:absolute;width:118px;
     display:flex;flex-direction:column;align-items:center;
@@ -810,10 +829,12 @@
 <div id="telescopeScreen">
   <div class="telescopeSky" id="telescopeSky"></div>
   <div class="telescopeVignette"></div>
+  <button class="telescopeViewToggle" id="telescopeViewToggle">📋 רשימה</button>
   <div class="telescopeHeader">
     <div class="telescopeTitle">תהיו שם לפני שזה קורה!</div>
     <div class="telescopeSub">בחרו אירוע וקפצו אליו</div>
   </div>
+  <div class="telescopeListView" id="telescopeListView"></div>
   <div class="telescopeFoot">
     <button class="telescopeManual" id="telescopeManual">בחירת תאריך ידנית</button>
   </div>
@@ -2623,6 +2644,31 @@
       el.style.zIndex=Math.floor(Math.random()*24);
     });
   }
+  function buildTelescopeListView(){
+    const list=$('telescopeListView');
+    list.innerHTML='';
+    const sorted=[...FUTURE_EVENTS].sort((a,b)=>a.year-b.year);
+    sorted.forEach(ev=>{
+      const vis=ENCY_TOPICS.find(t=>t.id===ev.domain) || {accent:'#8B6FE8'};
+      const row=document.createElement('div');
+      row.className='telescopeListRow';
+      row.innerHTML='<div class="telescopeListDot" style="background:'+vis.accent+';color:'+vis.accent+'"></div><div class="telescopeListText"><div class="telescopeListTitle">'+ev.title+'</div><div class="telescopeListTime">'+ev.timeframe+'</div></div>';
+      row.onclick=()=>{
+        playTelescopeSelect();
+        openTelescopeConfirm({eventId:ev.id, title:ev.title, timeframe:ev.timeframe, teaser:ev.teaser, year:ev.year, domain:ev.domain, mystery:false});
+      };
+      list.appendChild(row);
+    });
+  }
+  let telescopeListMode=false;
+  function toggleTelescopeView(){
+    telescopeListMode=!telescopeListMode;
+    $('telescopeListView').classList.toggle('open',telescopeListMode);
+    $('telescopeSky').style.display=telescopeListMode?'none':'block';
+    $('telescopeVignette').style.display=telescopeListMode?'none':'block';
+    $('telescopeViewToggle').textContent=telescopeListMode?'☁️ עננים':'📋 רשימה';
+  }
+  $('telescopeViewToggle').onclick=toggleTelescopeView;
   function playTelescopeAmbient(){
     if(!AC) return;
     const now=AC.currentTime;
@@ -2652,6 +2698,12 @@
     telescopeFreeJump=free;
     clearInterval(telescopeTimer);
     buildTelescopeField();
+    buildTelescopeListView();
+    telescopeListMode=false;
+    $('telescopeListView').classList.remove('open');
+    $('telescopeSky').style.display='block';
+    $('telescopeVignette').style.display='block';
+    $('telescopeViewToggle').textContent='📋 רשימה';
     $('telescopeScreen').classList.add('open');
     ensureAudio(); if(AC.state==='suspended') AC.resume();
     playTelescopeAmbient();
