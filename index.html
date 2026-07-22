@@ -712,7 +712,7 @@
       }else{
         subEl.textContent='מוכן.';
         setTimeout(function(){
-          if(window.startTelescope) window.startTelescope(true);
+          if(window.tryDeepLinkOrTelescope) window.tryDeepLinkOrTelescope();
           boot.classList.add('fading');
           setTimeout(function(){
             boot.classList.add('hidden');
@@ -941,8 +941,7 @@
     <input id="lmFrom" type="text" placeholder="מאת (רשות) — השם שלך">
     <input id="lmTo" type="text" placeholder="אל (רשות) — למשל: לעצמי, לדנה">
     <textarea id="lmText" placeholder="מה ברצונך לומר מהעתיד?"></textarea>
-    <div class="lmAttach" id="lmAttach">
-      <div class="lmAttachEmpty" id="lmAttachEmpty">📎 עוד לא צילמת דרך העדשה במסע הזה — פתח את עדשת הזמן, צלם, וחזור לכאן כדי לצרף</div>
+    <div class="lmAttach" id="lmAttach" style="display:none">
       <div class="lmAttachGot" id="lmAttachGot" style="display:none">
         <div class="lmGalleryHead"><b>יש לך תמונות מהעתיד</b><label class="lmAttachToggle"><input type="checkbox" id="lmAttachChk" checked> צרף</label></div>
         <div class="lmGallery" id="lmGallery"></div>
@@ -1770,9 +1769,12 @@
   async function dispatchPostcard(){
     if(!postcardBlob) return;
     const file=new File([postcardBlob],postcardFileName,{type:postcardBlob.type});
+    const ev=currentEvent();
+    const shareLink=ev ? (location.origin+location.pathname+'?event='+ev.id) : (location.origin+location.pathname);
+    const shareText='רוצה לשמוע עוד? הצטרפו למסע — '+shareLink;
     if(navigator.canShare && navigator.canShare({files:[file]})){
       try{
-        await navigator.share({files:[file],title:'סלפי מהעתיד'});
+        await navigator.share({files:[file],title:'סלפי מהעתיד',text:shareText});
         setTimeout(()=>{ $('postcardSendModal').classList.remove('open'); returnFromCameraFlowIfNeeded(); },400);
       }catch(e){}
     }else{
@@ -2418,7 +2420,7 @@
   let futureSnaps=[], selectedSnapIdx=-1; // {blob,url,ms}[] — כל תמונה שצולמה בעדשה במסע הנוכחי
   function refreshAttachUI(){
     const has=futureSnaps.length>0;
-    $('lmAttachEmpty').style.display = has? 'none':'block';
+    $('lmAttach').style.display = has? 'block':'none';
     $('lmAttachGot').style.display = has? 'flex':'none';
     if(!has) return;
     if(selectedSnapIdx<0 || selectedSnapIdx>=futureSnaps.length) selectedSnapIdx=futureSnaps.length-1; // ברירת מחדל: האחרונה
@@ -2535,6 +2537,9 @@
   async function dispatchLetter(){
     if(!letterBlob) return;
     const file=new File([letterBlob],letterFileName,{type:letterBlob.type});
+    const ev=currentEvent();
+    const shareLink=ev ? (location.origin+location.pathname+'?event='+ev.id) : (location.origin+location.pathname);
+    const shareText='רוצה לשמוע עוד? הצטרפו למסע — '+shareLink;
     const optional=[];
     if(letterWantsPhoto && futureSnaps.length>0 && selectedSnapIdx>=0){
       const p=futureSnaps[selectedSnapIdx];
@@ -2546,7 +2551,7 @@
       const files=[file,...chosen.map(o=>o.file)];
       if(navigator.canShare && navigator.canShare({files})){
         try{
-          await navigator.share({files,title:'איגרת מן העתיד'});
+          await navigator.share({files,title:'איגרת מן העתיד',text:shareText});
           const dropped=optional.length-n;
           addJournalEntry('נשלחה איגרת לעולם המקור.'+chosen.map(o=>o.label).join('')+(dropped?' ('+dropped+' צירוף/ים לא נתמכו לשיתוף משולב בדפדפן זה)':''));
           setTimeout(()=>{ $('letterSendModal').classList.remove('open'); returnFromCameraFlowIfNeeded(); }, 400);
@@ -2711,6 +2716,20 @@
     playTelescopeAmbient();
   }
   window.startTelescope=startTelescope;
+  window.tryDeepLinkOrTelescope=function(){
+    try{
+      const params=new URLSearchParams(location.search);
+      const evId=params.get('event');
+      const ev=evId ? FUTURE_EVENTS.find(e=>e.id===evId) : null;
+      if(ev){
+        const target=new Date(ev.year, Math.floor(Math.random()*12), 1+Math.floor(Math.random()*27), Math.floor(Math.random()*24), Math.floor(Math.random()*60), 0, 0).getTime();
+        lastLandedEventId=ev.id;
+        executeJump(target,true);
+        return;
+      }
+    }catch(e){}
+    startTelescope(true);
+  };
   function stopTelescope(){
     clearInterval(telescopeTimer);
     $('telescopeScreen').classList.remove('open');
