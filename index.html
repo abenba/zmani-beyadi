@@ -585,7 +585,7 @@
     position:absolute;inset:0;pointer-events:none;
     background:radial-gradient(circle at 50% 45%,transparent 38%,rgba(0,0,0,.55) 68%,rgba(0,0,0,.92) 100%)}
   .telescopeHeader{
-    position:absolute;top:calc(env(safe-area-inset-top) + 26px);left:0;right:0;text-align:center;color:#fff;z-index:30;pointer-events:none}
+    position:absolute;top:calc(env(safe-area-inset-top) + 26px);left:56px;right:56px;text-align:center;color:#fff;z-index:30;pointer-events:none}
   .telescopeTitle{font-family:'Frank Ruhl Libre',serif;font-size:30px;font-weight:800;line-height:1.25;color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.7),0 0 26px rgba(139,111,232,.55)}
   .telescopeSub{margin-top:10px;font-size:14px;font-weight:500;color:#C9D3E8}
   .telescopeFoot{
@@ -595,10 +595,10 @@
     font-family:'Heebo';font-size:12px;color:#B9C5E0;background:none;border:none;
     border-bottom:1px dotted #7A87A8;padding:2px}
   .telescopeViewToggle{
-    position:absolute;top:calc(env(safe-area-inset-top) + 22px);left:18px;z-index:32;
-    font-family:'Heebo';font-size:12px;font-weight:700;color:#fff;
+    position:absolute;top:calc(env(safe-area-inset-top) + 24px);left:14px;z-index:32;
+    font-family:'Heebo';font-size:10.5px;font-weight:700;color:#fff;
     background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);
-    border-radius:99px;padding:8px 14px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+    border-radius:99px;padding:6px 11px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
   .telescopeListView{
     display:none;position:absolute;inset:0;z-index:5;overflow-y:auto;
     padding:calc(env(safe-area-inset-top) + 96px) 16px calc(env(safe-area-inset-bottom) + 90px)}
@@ -835,7 +835,7 @@
     <div class="telescopeSub">בחרו אירוע וקפצו אליו</div>
   </div>
   <div class="telescopeListView" id="telescopeListView"></div>
-  <div class="telescopeFoot">
+  <div class="telescopeFoot" id="telescopeFoot">
     <button class="telescopeManual" id="telescopeManual">בחירת תאריך ידנית</button>
   </div>
 </div>
@@ -2666,7 +2666,8 @@
     $('telescopeListView').classList.toggle('open',telescopeListMode);
     $('telescopeSky').style.display=telescopeListMode?'none':'block';
     $('telescopeVignette').style.display=telescopeListMode?'none':'block';
-    $('telescopeViewToggle').textContent=telescopeListMode?'☁️ עננים':'📋 רשימה';
+    $('telescopeViewToggle').textContent=telescopeListMode?'☁️ סגור':'📋 רשימה';
+    $('telescopeFoot').style.display=telescopeListMode?'none':'flex';
   }
   $('telescopeViewToggle').onclick=toggleTelescopeView;
   function playTelescopeAmbient(){
@@ -2704,6 +2705,7 @@
     $('telescopeSky').style.display='block';
     $('telescopeVignette').style.display='block';
     $('telescopeViewToggle').textContent='📋 רשימה';
+    $('telescopeFoot').style.display='flex';
     $('telescopeScreen').classList.add('open');
     ensureAudio(); if(AC.state==='suspended') AC.resume();
     playTelescopeAmbient();
