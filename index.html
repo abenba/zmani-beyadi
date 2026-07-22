@@ -1755,7 +1755,7 @@
     if(navigator.canShare && navigator.canShare({files:[file]})){
       try{
         await navigator.share({files:[file],title:'סלפי מהעתיד'});
-        setTimeout(()=>{ $('postcardSendModal').classList.remove('open'); },400);
+        setTimeout(()=>{ $('postcardSendModal').classList.remove('open'); returnFromCameraFlowIfNeeded(); },400);
       }catch(e){}
     }else{
       alert('שיתוף ישיר לא נתמך בדפדפן הזה — אפשר לשמור לגלריה ולצרף ידנית.');
@@ -2526,7 +2526,7 @@
           await navigator.share({files,title:'איגרת מן העתיד'});
           const dropped=optional.length-n;
           addJournalEntry('נשלחה איגרת לעולם המקור.'+chosen.map(o=>o.label).join('')+(dropped?' ('+dropped+' צירוף/ים לא נתמכו לשיתוף משולב בדפדפן זה)':''));
-          setTimeout(()=>{ $('letterSendModal').classList.remove('open'); }, 400);
+          setTimeout(()=>{ $('letterSendModal').classList.remove('open'); returnFromCameraFlowIfNeeded(); }, 400);
         }catch(e){}
         return;
       }
