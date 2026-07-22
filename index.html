@@ -586,17 +586,14 @@
     background:radial-gradient(circle at 50% 45%,transparent 38%,rgba(0,0,0,.55) 68%,rgba(0,0,0,.92) 100%)}
   .telescopeHeader{
     position:absolute;top:calc(env(safe-area-inset-top) + 26px);left:0;right:0;text-align:center;color:#fff;z-index:30;pointer-events:none}
-  .telescopeTitle{font-family:'Frank Ruhl Libre',serif;font-size:21px;font-weight:700;line-height:1.5;text-shadow:0 2px 14px rgba(0,0,0,.6)}
-  .telescopeSub{margin-top:6px;font-size:12.5px;color:#B9C5E0}
+  .telescopeTitle{font-family:'Frank Ruhl Libre',serif;font-size:30px;font-weight:800;line-height:1.25;color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.7),0 0 26px rgba(139,111,232,.55)}
+  .telescopeSub{margin-top:10px;font-size:14px;font-weight:500;color:#C9D3E8}
   .telescopeFoot{
     position:absolute;bottom:calc(env(safe-area-inset-bottom) + 24px);left:0;right:0;
     display:flex;flex-direction:column;align-items:center;gap:10px;z-index:2}
   .telescopeManual{
     font-family:'Heebo';font-size:12px;color:#B9C5E0;background:none;border:none;
     border-bottom:1px dotted #7A87A8;padding:2px}
-  .telescopeSkip{
-    font-family:'Heebo';font-size:12.5px;font-weight:700;color:#fff;
-    background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:99px;padding:9px 20px}
   .telescopeTag{
     position:absolute;width:118px;
     display:flex;flex-direction:column;align-items:center;
@@ -814,11 +811,11 @@
   <div class="telescopeSky" id="telescopeSky"></div>
   <div class="telescopeVignette"></div>
   <div class="telescopeHeader">
-    <div class="telescopeTitle">זה עומד לקרות!<br>בחרו אירוע עתידי וקפצו לבקר בו</div>
+    <div class="telescopeTitle">תהיו שם לפני שזה קורה!</div>
+    <div class="telescopeSub">בחרו אירוע וקפצו אליו</div>
   </div>
   <div class="telescopeFoot">
     <button class="telescopeManual" id="telescopeManual">בחירת תאריך ידנית</button>
-    <button class="telescopeSkip" id="telescopeSkip">🕐 המשך בזמן רגיל</button>
   </div>
 </div>
 
@@ -2684,7 +2681,6 @@
     await executeJump(target, telescopeFreeJump);
   };
   $('telescopeManual').onclick=()=>{ stopTelescope(); openManualJumpForm(); };
-  $('telescopeSkip').onclick=()=>{ stopTelescope(); };
 
   function scrambleClock(durationMs, waypoints){
     return new Promise(res=>{
