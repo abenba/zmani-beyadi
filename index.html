@@ -1806,7 +1806,6 @@
     // התעצמות הדרגתית: עולה עם הזמן שנשארים בהיסט + "בונוס" ממעשים משמעותיים (שליחת תמונה מהעתיד) — יורדת חלק כשחוזרים להווה
     intensityTarget = driftStart===null ? 0 : intensityCurve((now-driftStart)/1000 + driftBoostSec);
     intensity += (intensityTarget-intensity)*Math.min(1, dt*(intensityTarget>intensity?1.2:2.2));
-    maybeBurst(now/1000);
     applyIntensityStyling();
 
     // מכסת הזמן היומית הוסרה מהתצוגה ומהשימוש — לא מרוקנים ולא מאפסים מצב באופן אוטומטי יותר
