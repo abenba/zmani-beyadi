@@ -28,6 +28,22 @@
     letter-spacing:.015em;color:#EFEFE9;transform:skewX(-5deg) rotate(-1.5deg);
     text-shadow:0 0 22px rgba(139,111,232,.55),0 2px 3px rgba(0,0,0,.4)}
   .bootSub{margin-top:34px;font-family:'Heebo';font-size:13px;color:#9FA6B3;animation:bootPulse 1.6s ease-in-out infinite}
+  .bootAboutLink{
+    position:absolute;top:calc(env(safe-area-inset-top) + 22px);left:18px;z-index:3;
+    font-family:'Heebo';font-size:11px;font-weight:700;color:#fff;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);
+    border-radius:99px;padding:7px 14px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  #aboutModal{
+    position:fixed;inset:0;z-index:110;display:none;place-items:center;
+    background:rgba(6,9,14,.88);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:24px}
+  #aboutModal.open{display:grid}
+  .aboutBox{
+    position:relative;width:100%;max-width:340px;background:#12151f;border:1px solid rgba(255,255,255,.14);
+    border-radius:18px;padding:30px 22px 22px;color:#EAEAF0}
+  .aboutBox p{font-family:'Heebo';font-size:14px;line-height:1.85;margin-bottom:14px;text-align:right}
+  .aboutClose{
+    position:absolute;top:14px;left:14px;background:none;border:none;color:#8B95A0;font-size:16px;padding:4px}
+  .aboutCreditIn{margin-top:18px;text-align:center;font-family:'Heebo';font-size:10px;color:#5A6172}
   @keyframes bootPulse{0%,100%{opacity:.5}50%{opacity:1}}
   .bootDigits{margin-top:22px;font-family:'IBM Plex Mono',monospace;font-size:38px;font-weight:700;color:#fff;direction:ltr;letter-spacing:.02em}
   body{
@@ -349,7 +365,6 @@
   .lcBgIcon svg{width:100%;height:100%;display:block}
   .lcBgText{font-family:'Heebo';font-size:12.5px;font-weight:700;color:#7A6B42;line-height:1.6}
   .lcBgTextWrap{display:flex;flex-direction:column;gap:7px}
-  .lcBgCta{font-family:'Heebo';font-size:10px;font-weight:700;color:#A5762B}
   .lcBgText::before{content:'רקע — ';font-weight:800;color:#A5762B}
   .lcBody{font-family:'Frank Ruhl Libre',serif;font-weight:400;font-size:17.5px;line-height:1.95;color:#2A2416;white-space:pre-wrap;min-height:90px;text-align:right}
   .lcFoot{margin-top:32px}
@@ -388,7 +403,6 @@
     background:rgba(0,0,0,.32);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
     border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:8px 18px}
   .pcCaption{margin-top:14px;font-family:'Frank Ruhl Libre',serif;font-size:16px;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.5)}
-  .pcCta{margin-top:10px;font-family:'Heebo';font-size:10.5px;font-weight:700;color:rgba(255,255,255,.75)}
   .pcDistance{margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#D8CBFF;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.5)}
   .pcSeal{margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,.7);letter-spacing:.05em}
   .pcFoot{margin-top:22px}
@@ -650,6 +664,18 @@
     <div class="bootTitle">🌀 העתיד זה לא מה שהיה פעם</div>
     <div class="bootSub">הקש כדי להתחיל</div>
   </div>
+  <button class="bootAboutLink" id="bootAboutLink">מה זה?</button>
+</div>
+
+<div id="aboutModal">
+  <div class="aboutBox">
+    <button class="aboutClose" id="aboutClose">✕</button>
+    <p>לא ידוע מי אמר לראשונה את המשפט "העתיד זה לא מה שהיה פעם". אבל הטכנולוגיות החדישות ביותר דואגות לכך שהוא יישמע נכון מתמיד.</p>
+    <p>האפליקציה הזו מאפשרת לך לדלג, בהקשת מקש, היישר לתוך אחד מהאירועים העתידיים שמחכים — אולי, צריך לומר בזהירות — להתרחש.</p>
+    <p>בחר שנה שבה קורה הבלתי יאומן. בקר במקום שבו, כנגד כל הסיכויים, הכל משתנה.</p>
+    <p>ואז — שלח איגרת, או סלפי מהיר מהמקום שאליו הגעת, שיספר לחברים שלך על ההרפתקה הקטנה והמשונה שעשית.</p>
+    <div class="aboutCreditIn">רעיון: עמי בן בסט</div>
+  </div>
 </div>
 <script>
 (function(){
@@ -714,6 +740,16 @@
   boot.addEventListener('click',runBoot);
   boot.addEventListener('touchstart',runBoot,{passive:true});
   boot.addEventListener('pointerdown',runBoot);
+  var aboutLink=document.getElementById('bootAboutLink');
+  var aboutModal=document.getElementById('aboutModal');
+  var aboutClose=document.getElementById('aboutClose');
+  function stopAndOpenAbout(e){ e.stopPropagation(); e.preventDefault(); aboutModal.classList.add('open'); }
+  aboutLink.addEventListener('click',stopAndOpenAbout);
+  aboutLink.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
+  aboutLink.addEventListener('touchstart',function(e){ e.stopPropagation(); },{passive:true});
+  aboutClose.addEventListener('click',function(e){ e.stopPropagation(); aboutModal.classList.remove('open'); });
+  aboutModal.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
+  aboutModal.addEventListener('touchstart',function(e){ e.stopPropagation(); },{passive:true});
 })();
 </script>
 <canvas id="stream"></canvas>
@@ -990,7 +1026,6 @@
     <div class="lcBgIcon" id="lcBgIcon"></div>
     <div class="lcBgTextWrap">
       <div class="lcBgText" id="lcBgText"></div>
-      <div class="lcBgCta">רוצה לשמוע עוד? הצטרף למסע — time3machine.netlify.app</div>
     </div>
   </div>
   <div class="lcTopicImg" id="lcTopicImg" style="display:none"><img id="lcTopicImgEl" alt=""></div>
@@ -1011,7 +1046,6 @@
     <div class="pcDateTag" id="pcDateTag"></div>
     <div class="pcDistance" id="pcDistance"></div>
     <div class="pcCaption" id="pcCaption"></div>
-    <div class="pcCta">רוצה לשמוע עוד? הצטרף למסע — time3machine.netlify.app</div>
     <div class="pcSeal" id="pcSeal"></div>
     <div class="pcFoot">
       <div class="pcFootLine"></div>
