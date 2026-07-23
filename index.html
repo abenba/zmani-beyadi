@@ -1794,7 +1794,7 @@
     const file=new File([postcardBlob],postcardFileName,{type:postcardBlob.type});
     const ev=currentEvent();
     const shareLink=ev ? (location.origin+location.pathname+'?event='+ev.id) : (location.origin+location.pathname);
-    const shareText='רוצה לשמוע עוד? הצטרפו למסע — '+shareLink;
+    const shareText='סלפי מהעתיד\n\nרוצה לשמוע עוד? הצטרפו למסע — '+shareLink;
     if(navigator.canShare && navigator.canShare({files:[file]})){
       try{
         await navigator.share({files:[file],title:'סלפי מהעתיד',text:shareText});
@@ -2562,7 +2562,7 @@
     const file=new File([letterBlob],letterFileName,{type:letterBlob.type});
     const ev=currentEvent();
     const shareLink=ev ? (location.origin+location.pathname+'?event='+ev.id) : (location.origin+location.pathname);
-    const shareText='רוצה לשמוע עוד? הצטרפו למסע — '+shareLink;
+    const shareText='איגרת מן העתיד\n\nרוצה לשמוע עוד? הצטרפו למסע — '+shareLink;
     const optional=[];
     if(letterWantsPhoto && futureSnaps.length>0 && selectedSnapIdx>=0){
       const p=futureSnaps[selectedSnapIdx];
