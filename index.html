@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>היינו שם</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800&family=IBM+Plex+Mono:wght@300;500;700&family=Caveat:wght@500&family=Rubik:wght@400;500;600&family=Frank+Ruhl+Libre:wght@400;500;700&family=Secular+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800&family=IBM+Plex+Mono:wght@300;500;700&family=Caveat:wght@500&family=Rubik:wght@400;500;600&family=Rubik+Wet+Paint&family=Frank+Ruhl+Libre:wght@400;500;700&family=Secular+One&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#EEF1F4; --ink:#1B2430; --ink-soft:#5A6572;
@@ -23,19 +23,10 @@
   #bootScreen.fading{opacity:0;pointer-events:none}
   #bootScreen.hidden{display:none}
   .bootInner{text-align:center;color:#fff;padding:20px}
-  .bootTitle{font-family:'IBM Plex Mono',monospace;font-size:29px;font-weight:700;letter-spacing:.03em;color:#C9BCF2;text-shadow:0 0 22px rgba(139,111,232,.5)}
-  .bootQuoteEn{
-    margin-top:32px;font-family:'Caveat',cursive;font-weight:500;font-size:24px;line-height:1.4;
-    color:#EFEFE9;text-shadow:0 0 1px rgba(255,255,255,.5);transform:skewX(-3deg);direction:ltr;
-    text-align:left;width:100%}
-  .bootQuoteHe{
-    margin-top:18px;font-family:'Rubik',sans-serif;font-weight:400;font-size:16px;line-height:1.6;
-    color:#EFEFE9;text-shadow:0 0 1px rgba(255,255,255,.5);transform:skewX(-4deg);letter-spacing:.01em;
-    text-align:right;width:100%}
-  .bootAnonym{
-    margin-top:8px;font-family:'Caveat',cursive;font-weight:500;font-size:16px;
-    color:#EFEFE9;text-shadow:0 0 1px rgba(255,255,255,.5);letter-spacing:.04em;
-    text-align:left;width:100%;direction:ltr}
+  .bootTitle{
+    font-family:'Rubik Wet Paint',cursive;font-weight:400;font-size:26px;line-height:1.5;
+    letter-spacing:.015em;color:#EFEFE9;transform:skewX(-5deg) rotate(-1.5deg);
+    text-shadow:0 0 22px rgba(139,111,232,.55),0 2px 3px rgba(0,0,0,.4)}
   .bootSub{margin-top:34px;font-family:'Heebo';font-size:13px;color:#9FA6B3;animation:bootPulse 1.6s ease-in-out infinite}
   @keyframes bootPulse{0%,100%{opacity:.5}50%{opacity:1}}
   .bootDigits{margin-top:22px;font-family:'IBM Plex Mono',monospace;font-size:38px;font-weight:700;color:#fff;direction:ltr;letter-spacing:.02em}
@@ -656,9 +647,7 @@
 <body>
 <div id="bootScreen">
   <div class="bootInner" id="bootInner">
-    <div class="bootTitle">🌀 היינו שם</div>
-    <div class="bootQuoteEn">you'll read about it.<br>i lived it.</div>
-    <div class="bootAnonym">anonym</div>
+    <div class="bootTitle">🌀 העתיד זה לא מה שהיה פעם</div>
     <div class="bootSub">הקש כדי להתחיל</div>
   </div>
 </div>
@@ -694,7 +683,7 @@
     if(window.unlockAudio) window.unlockAudio();
     playBootSound();
     inner.innerHTML =
-      '<div class="bootTitle">🌀 היינו שם</div>'+
+      '<div class="bootTitle">🌀 העתיד זה לא מה שהיה פעם</div>'+
       '<div class="bootSub" id="bootSub2">מתחבר לעולם…</div>'+
       '<div class="bootDigits" id="bootDigits">--:--</div>';
     var digitsEl=document.getElementById('bootDigits'), subEl=document.getElementById('bootSub2');
@@ -831,7 +820,7 @@
   <div class="telescopeVignette" id="telescopeVignette"></div>
   <button class="telescopeViewToggle" id="telescopeViewToggle">📋 רשימה</button>
   <div class="telescopeHeader">
-    <div class="telescopeTitle">תהיו שם לפני שזה קורה!</div>
+    <div class="telescopeTitle">בקרו בעתיד, רגע לפני שהוא קורה</div>
     <div class="telescopeSub">בחרו אירוע וקפצו אליו</div>
   </div>
   <div class="telescopeListView" id="telescopeListView"></div>
