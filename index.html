@@ -382,8 +382,10 @@
   #postcardCard{
     width:480px;position:fixed;left:-9999px;top:0;text-align:center;font-family:'Heebo';
     overflow:hidden;border-radius:4px}
-  .pcBg{position:absolute;inset:0}
+  .pcBg{position:absolute;inset:0;overflow:hidden}
   .pcBg svg{position:absolute;inset:0;width:100%;height:100%}
+  .pcBgBlur{position:absolute;inset:-24px;background-size:cover;background-position:center;filter:blur(22px);opacity:.6}
+  .pcBgDark{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(6,9,14,.72) 55%,rgba(6,9,14,.94))}
   .pcTopicIcon{width:280px;height:280px;margin:2px auto -30px;opacity:1;filter:drop-shadow(0 8px 24px rgba(0,0,0,.35))}
   .pcTopicIcon svg{width:100%;height:100%;display:block}
   .pcContent{position:relative;z-index:1;padding:44px 34px 36px}
@@ -1722,7 +1724,7 @@
   async function tryAiSelfie(ev,targetYear,blob){
     try{
       const base64=await blobToBase64(blob);
-      const prompt='ערוך את התמונה המצורפת מחדש כדי שתשקף את האירוע הספציפי הבא, שהתרחש בשנת '+targetYear+': "'+ev.title+'" — '+ev.teaser+' אם יש אדם/אנשים בתמונה המקורית — שמור על הפנים שלהם ברורים, מוכרים ובמרכז הפריים, וצייר את הסביבה מסביבם מחדש כך שתשקף במפורש את האירוע הזה (לא רק אווירה עתידנית כללית). אם אין אדם בתמונה (למשל תמונת נוף, עצם או מקום) — אל תוסיף דמות מלאכותית שלא הייתה שם; התאם רק את הסצנה, האווירה והפרטים לאירוע, על בסיס התמונה המקורית. בשני המקרים: צייר בסגנון מאויר (לא פוטוריאליסטי), לא איור שטוח או גנרי. חשוב: התוצאה צריכה להיות מרשימה, דרמטית ומגניבה ויזואלית — קומפוזיציה נועזת, תאורה אטמוספרית, עומק ופרטים עשירים ברקע שמרמזים בבירור על האירוע. סגנון אמנותי-עתידני איכותי (ברמת קונספט-ארט של קולנוע מדע בדיוני), גוונים סביב הצבע '+ev.accent+', קומפוזיציה פורטרטית (לאורך), ללא טקסט בתמונה.';
+      const prompt='ערוך את התמונה המצורפת מחדש כדי שתשקף את האירוע הספציפי הבא, שהתרחש בשנת '+targetYear+': "'+ev.title+'" — '+ev.teaser+'\n\nאם יש אדם/אנשים בתמונה המקורית — זו הדרישה החשובה ביותר: הפנים שלהם חייבים להישאר גדולים, ברורים, מוכרים ובמרכז הפריים בדיוק כמו בתמונה המקורית (אותו גודל יחסי, אותה זווית, אותה קרבה למצלמה) — אסור לצייר אותם קטנים או בצד. צייר את הסביבה מסביבם מחדש כך שתשקף במפורש ובאופן ממשי את האירוע — כלול לפחות שני פרטים חזותיים ספציפיים ומזוהים מהתיאור (למשל: כלי-רכב, מבנה, טכנולוגיה או תופעה שמוזכרים בטעימה), לא רק אווירה עתידנית כללית מטושטשת. אם אין אדם בתמונה (למשל תמונת נוף, עצם או מקום) — אל תוסיף דמות מלאכותית שלא הייתה שם; התאם רק את הסצנה, האווירה והפרטים לאירוע, על בסיס התמונה המקורית.\n\nבשני המקרים: צייר בסגנון מאויר (לא פוטוריאליסטי), לא איור שטוח או גנרי. חשוב: התוצאה צריכה להיות מרשימה, דרמטית ומגניבה ויזואלית — קומפוזיציה נועזת, תאורה אטמוספרית, עומק ופרטים עשירים ברקע שמרמזים בבירור על האירוע. סגנון אמנותי-עתידני איכותי (ברמת קונספט-ארט של קולנוע מדע בדיוני), גוונים סביב הצבע '+ev.accent+', קומפוזיציה פורטרטית (לאורך), ללא טקסט בתמונה.';
       const res=await fetch('/.netlify/functions/generate-image',{
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({prompt, image:base64, mimeType: blob.type||'image/jpeg'})
@@ -1754,6 +1756,7 @@
       if(aiUrl){
         photoUrl=aiUrl;
         $('pcTopicIcon').style.display='none';
+        $('pcBg').innerHTML='<div class="pcBgBlur" style="background-image:url(\''+aiUrl+'\')"></div><div class="pcBgDark"></div>';
       }else{
         $('pcTopicIcon').innerHTML=buildEncyIllustration(ev.motif,ev.accent);
         $('pcTopicIcon').style.display='block';
