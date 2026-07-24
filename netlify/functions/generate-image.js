@@ -22,7 +22,7 @@ exports.handler = async function (event) {
     return { statusCode: 400, body: JSON.stringify({ error: 'גוף בקשה לא תקין' }) };
   }
 
-  if (!prompt || typeof prompt !== 'string' || prompt.length > 900) {
+  if (!prompt || typeof prompt !== 'string' || prompt.length > 1800) {
     return { statusCode: 400, body: JSON.stringify({ error: 'prompt חסר או ארוך מדי' }) };
   }
   if (imageBase64 && (typeof imageBase64 !== 'string' || imageBase64.length > 8000000)) {
